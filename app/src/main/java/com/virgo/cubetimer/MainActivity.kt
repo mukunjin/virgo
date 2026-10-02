@@ -2,6 +2,7 @@ package com.virgo.cubetimer
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
@@ -10,18 +11,22 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.util.Base64
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
+import android.webkit.JsPromptResult
+import android.webkit.JsResult
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.EditText
 import android.widget.Toast
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
@@ -40,7 +45,10 @@ class MainActivity : Activity() {
         // 计时过程中保持屏幕常亮
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        // 启动首帧就用 csTimer 默认配色方案的底色，避免白屏闪烁
+        window.setBackgroundDrawable(ColorDrawable(BACKGROUND_COLOR))
         webView = WebView(this)
+        webView.setBackgroundColor(BACKGROUND_COLOR)
         setContentView(webView)
 
         // 必须放在 setContentView 之后：DecorView 未创建时取 insetsController 会抛 NPE
@@ -120,6 +128,60 @@ class MainActivity : Activity() {
         }
 
         webView.webChromeClient = object : WebChromeClient() {
+            // WebView 自带的 alert/confirm/prompt 会把页面地址
+            // （https://appassets.androidplatform.net/...）显示在弹窗里，这里统一换成系统弹窗。
+            override fun onJsAlert(
+                view: WebView,
+                url: String,
+                message: String,
+                result: JsResult
+            ): Boolean {
+                AlertDialog.Builder(this@MainActivity, DIALOG_THEME)
+                    .setMessage(message)
+                    .setPositiveButton(android.R.string.ok) { _, _ -> result.confirm() }
+                    .setOnCancelListener { result.cancel() }
+                    .show()
+                return true
+            }
+
+            override fun onJsConfirm(
+                view: WebView,
+                url: String,
+                message: String,
+                result: JsResult
+            ): Boolean {
+                AlertDialog.Builder(this@MainActivity, DIALOG_THEME)
+                    .setMessage(message)
+                    .setPositiveButton(android.R.string.ok) { _, _ -> result.confirm() }
+                    .setNegativeButton(android.R.string.cancel) { _, _ -> result.cancel() }
+                    .setOnCancelListener { result.cancel() }
+                    .show()
+                return true
+            }
+
+            override fun onJsPrompt(
+                view: WebView,
+                url: String,
+                message: String,
+                defaultValue: String?,
+                result: JsPromptResult
+            ): Boolean {
+                val input = EditText(this@MainActivity).apply {
+                    setText(defaultValue ?: "")
+                    setSelection(text.length)
+                }
+                AlertDialog.Builder(this@MainActivity, DIALOG_THEME)
+                    .setMessage(message)
+                    .setView(input)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        result.confirm(input.text.toString())
+                    }
+                    .setNegativeButton(android.R.string.cancel) { _, _ -> result.cancel() }
+                    .setOnCancelListener { result.cancel() }
+                    .show()
+                return true
+            }
+
             override fun onShowFileChooser(
                 view: WebView,
                 callback: ValueCallback<Array<Uri>>,
@@ -251,6 +313,12 @@ class MainActivity : Activity() {
     }
 
     private companion object {
+        /** csTimer 默认配色方案的底色，用于消除启动白屏。 */
+        val BACKGROUND_COLOR = 0xFFEEFFCC.toInt()
+
+        /** 网页弹窗统一使用系统默认弹窗主题。 */
+        val DIALOG_THEME = android.R.style.Theme_DeviceDefault_Dialog_Alert
+
         const val APP_HOST = "appassets.androidplatform.net"
         const val START_URL = "https://appassets.androidplatform.net/assets/www/index.html"
         const val REQUEST_FILE_CHOOSER = 1001

@@ -700,7 +700,7 @@ var exportFunc = execMain(function() {
 		kernel.regProp('kernel', 'atexpi', ~1, 'Auto Export Interval (Solves)', [100, [50, 100, 200, 500], ['50', '100', '200', '500']]);
 		kernel.regProp('kernel', 'expp', 0, PROPERTY_IMPPREV, [false]);
 
-		kernel.addButton('export', BUTTON_EXPORT, showExportDiv, 2);
+		
 		exportDiv.append('<br>',
 			$('<div class="expOauth">').append(
 				$('<table id="wcaLogin">').append(wcaDataTr),
