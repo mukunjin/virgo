@@ -3,8 +3,7 @@
 
     <!--
       Virgo 完全离线：不申请 android.permission.INTERNET，
-      因此 App 在系统层面就没有联网能力。
-      WebViewAssetLoader 在本地拦截 https://appassets.androidplatform.net 请求，无需网络。
+      因此 App 在系统层面就没有联网能力。界面与逻辑均为原生实现，无 WebView。
     -->
 
     <application
