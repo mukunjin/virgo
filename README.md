@@ -1,73 +1,75 @@
 # Virgo
 
-安卓离线三阶魔方计时器。**全原生 Android（Kotlin + Jetpack Compose）实现，不使用 WebView**，打乱与计时逻辑参考并复刻自 csTimer（GPLv3）。**完全离线运行**，不申请 INTERNET 权限，不依赖 cstimer.net。
+English | [简体中文](README.zh-CN.md)
 
-三阶（333）打乱算法**全复刻 csTimer**：ISAAC 随机源 + 随机态生成 + min2phase 求逆解，同种子下生成的打乱与 csTimer **逐字符一致**，并有金标准单测保障。
+An offline 3x3x3 Rubik's Cube timer for Android. **Fully native Android (Kotlin + Jetpack Compose), no WebView**; the scramble and timer logic are referenced from and reimplemented after csTimer (GPLv3). It **runs completely offline** — no INTERNET permission is requested and it does not depend on cstimer.net.
 
-## 功能
+The 3x3x3 (333) scramble algorithm is a **full reimplementation of csTimer's**: ISAAC random source + random-state generation + min2phase inverse solution. With the same seed, the generated scrambles match csTimer **character for character**, guarded by golden-standard unit tests.
 
-- **打乱**：333 打乱生成、上一条/下一条历史、刷新、打乱展开图
-- **计时**：全屏任意位置计时。长按 300ms 进入观察（15 秒倒计时，超时 +2、超过 17 秒 DNF），再长按 300ms 进入就绪，松手开跑
-- **成绩**：自动落库（含打乱文本）、单次 +2 / DNF / 删除
-- **分组**：新建、切换、删除分组（删除分组会连同其成绩一并删除，需弹窗确认）
-- **统计**：ao5 / ao12 / 单次最好 / 单次最差 / 总平均 / 次数 / DNF
-- **设置**：观察计时开关、精确到毫秒、打乱文本换行与对齐
-- **显示**：全屏、屏幕常亮、纯黑背景
+## Features
 
-## 不包含
+- **Scramble**: 333 scramble generation, previous/next history, refresh, scramble expansion diagram
+- **Timer**: tap anywhere on the full screen to time. Long-press 300 ms to enter inspection (15 s countdown; over 15 s gives +2, over 17 s gives DNF), long-press 300 ms again to get ready, release to start
+- **Solves**: automatically stored (including the scramble text), per-solve +2 / DNF / delete
+- **Groups**: create, switch, delete groups (deleting a group also deletes its solves, with a confirmation dialog)
+- **Statistics**: ao5 / ao12 / best / worst / mean / count / DNF
+- **Settings**: inspection toggle, millisecond precision, scramble text wrap and alignment
+- **Display**: full screen, keep screen on, pure black background
 
-蓝牙/硬件计时器、对战、在线比赛、求解器界面、虚拟魔方、在线服务、捐赠、成绩导入导出界面。
+## Not Included
 
-## 界面
+Bluetooth/hardware timers, versus mode, online competitions, solver UI, virtual cube, online services, donations, solve import/export UI.
 
-底部常驻滑动胶囊在 **计时 / 成绩 / 设置 / 关于** 四个整屏界面之间切换，支持点击平滑滑动与拖动跟手吸附。
+## UI
 
-配色为纯黑 + 白：背景 `#000000`、主文本与时间 `#FFFFFF`、面板深灰、危险操作红色。
+A persistent sliding capsule at the bottom switches between four full-screen pages: **Timer / Stats / Settings / About**, supporting a smooth slide on tap and drag-to-snap tracking the finger.
 
-## 目录结构
+The color scheme is pure black + white: background `#000000`, primary text and time `#FFFFFF`, panels dark gray, destructive actions red.
 
-| 路径 | 说明 |
+## Project Structure
+
+| Path | Description |
 | --- | --- |
-| `app/src/main/java/com/virgo/cubetimer/scramble/` | 333 打乱全复刻（ISAAC 随机源 + 魔方模型 + min2phase 求解内核 + 打乱组装） |
-| `app/src/main/java/com/virgo/cubetimer/timer/` | 计时状态机（复刻 csTimer `timer.js`）与时间格式化 |
-| `app/src/main/java/com/virgo/cubetimer/stats/` | ao5/ao12、修剪平均、分组统计（复刻 `timestat.js`） |
-| `app/src/main/java/com/virgo/cubetimer/data/` | Room 数据库（分组与成绩）与设置仓库 |
-| `app/src/main/java/com/virgo/cubetimer/ui/` | Compose 界面（计时页 + 成绩/设置/关于页 + 底部分段胶囊） |
-| `app/src/main/java/com/virgo/cubetimer/ui/menu/` | 底部分段胶囊导航组件 |
-| `app/src/main/java/com/virgo/cubetimer/ui/theme/` | 黑 + 白配色、暗色主题与计时字体 |
-| `app/src/test/` | 打乱与随机源的金标准测试 |
+| `app/src/main/java/com/virgo/cubetimer/scramble/` | Full 333 scramble reimplementation (ISAAC random source + cube model + min2phase solver core + scramble assembly) |
+| `app/src/main/java/com/virgo/cubetimer/timer/` | Timer state machine (reimplemented from csTimer `timer.js`) and time formatting |
+| `app/src/main/java/com/virgo/cubetimer/stats/` | ao5/ao12, trimmed average, group statistics (reimplemented from `timestat.js`) |
+| `app/src/main/java/com/virgo/cubetimer/data/` | Room database (groups and solves) and settings repository |
+| `app/src/main/java/com/virgo/cubetimer/ui/` | Compose UI (timer page + stats/settings/about pages + bottom segmented capsule) |
+| `app/src/main/java/com/virgo/cubetimer/ui/menu/` | Bottom segmented capsule navigation component |
+| `app/src/main/java/com/virgo/cubetimer/ui/theme/` | Black + white palette, dark theme and timer font |
+| `app/src/test/` | Golden-standard tests for the scramble and random source |
 
-## 版本号
+## Version
 
-版本号**唯一来源**是根目录 [gradle.properties](gradle.properties)：
+The **single source of truth** for the version is the root [gradle.properties](gradle.properties):
 
 ```properties
 virgo.versionCode=2
 virgo.versionName=0.1.7
 ```
 
-`app/build.gradle.kts` 直接读取这两项写入 APK；界面如需显示版本，读 `BuildConfig.VERSION_NAME` 即可与 APK 完全一致（`buildConfig` 已开启）。改版本只改这一处。
+`app/build.gradle.kts` reads these two values directly and writes them into the APK; if the UI needs to display the version, read `BuildConfig.VERSION_NAME` to stay exactly consistent with the APK (`buildConfig` is enabled). To change the version, change only this place.
 
-- `versionName` 是自由字符串，可写 `1.0.0` 这类三位小数，仅用于展示
-- `versionCode` 必须是递增整数，用于系统判断升级
+- `versionName` is a free-form string, e.g. `1.0.0`; used for display only
+- `versionCode` must be an increasing integer, used by the system to judge upgrades
 
-APK 产物名也跟随版本号自动生成：release 为 **`virgo-<versionName>.apk`**，debug 为 `virgo-<versionName>-debug.apk`。当前版本 `0.1.7`，产物即 `virgo-0.1.7.apk`。
+The APK artifact name also follows the version automatically: for release it is **`virgo-<versionName>.apk`**, for debug `virgo-<versionName>-debug.apk`. The current version is `0.1.7`, so the artifact is `virgo-0.1.7.apk`.
 
-“关于”界面同样读取 `BuildConfig.VERSION_NAME` 显示版本号，不会与 APK 不一致。
+The "About" screen likewise reads `BuildConfig.VERSION_NAME`, so it never disagrees with the APK.
 
-## 应用图标
+## App Icon
 
-现用图标是 `app/src/main/res/mipmap-*/ic_launcher.png`（5 档密度）。替换成自己的 PNG 有两种方式。
+The current icon is `app/src/main/res/mipmap-*/ic_launcher.png` (5 densities). There are two ways to replace it with your own PNG.
 
-### 方式一：Android Studio 图形化（推荐）
+### Option 1: Android Studio GUI (recommended)
 
-`res` 右键 → **New → Image Asset** → Icon Type 选 `Launcher Icons (Adaptive and Legacy)` → Source Asset 选你的 PNG → 调整缩放与安全区 → Finish。Studio 会自动生成各密度 PNG 与自适应图标 XML。
+Right-click `res` → **New → Image Asset** → set Icon Type to `Launcher Icons (Adaptive and Legacy)` → choose your PNG as Source Asset → adjust scaling and safe zone → Finish. Studio generates the density PNGs and the adaptive icon XML automatically.
 
-### 方式二：手动替换
+### Option 2: Manual replacement
 
-把同一张 PNG 缩放成下列尺寸，逐一覆盖同名文件（保持文件名 `ic_launcher.png`）：
+Scale the same PNG to the sizes below and overwrite the same-named files (keep the name `ic_launcher.png`):
 
-| 目录 | 边长 |
+| Directory | Size |
 | --- | --- |
 | `mipmap-mdpi` | 48 px |
 | `mipmap-hdpi` | 72 px |
@@ -75,11 +77,11 @@ APK 产物名也跟随版本号自动生成：release 为 **`virgo-<versionName>
 | `mipmap-xxhdpi` | 144 px |
 | `mipmap-xxxhdpi` | 192 px |
 
-Android 8.0 及以上还会用自适应图标（圆形/方形/圆角遮罩）。若要支持，需要额外做：
+Android 8.0 and above also uses adaptive icons (circle/square/rounded masks). To support that, additionally do the following:
 
-1. 把 PNG 放到 `res/drawable-nodpi/ic_launcher_foreground.png`，画布 **432×432**，主体图形放在**居中 66% 的安全区内**（四周留白，避免被遮罩切掉）
-2. 在 `res/values/colors.xml` 定义背景色，如 `<color name="ic_launcher_background">#000000</color>`
-3. 新建 `res/mipmap-anydpi-v26/ic_launcher.xml`：
+1. Put the PNG at `res/drawable-nodpi/ic_launcher_foreground.png`, canvas **432x432**, with the main graphic inside the **centered 66% safe zone** (leave margins so the mask does not clip it)
+2. Define a background color in `res/values/colors.xml`, e.g. `<color name="ic_launcher_background">#000000</color>`
+3. Create `res/mipmap-anydpi-v26/ic_launcher.xml`:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -89,17 +91,17 @@ Android 8.0 及以上还会用自适应图标（圆形/方形/圆角遮罩）。
 </adaptive-icon>
 ```
 
-只做方式二而不做第 1~3 步时，Android 8.0+ 会把普通 PNG 塞进圆形/方形遮罩里，可能被裁掉四角。
+If you only do Option 2 without steps 1-3, Android 8.0+ will put the plain PNG into a circular/square mask and may clip the corners.
 
-## 环境要求
+## Requirements
 
-- Windows + PowerShell 5.1 及以上
-- Android Studio（自带 JDK：`C:\Program Files\Android\Android Studio\jbr`）
-- Android SDK（`platform-tools` 提供 adb）
+- Windows + PowerShell 5.1 or newer
+- Android Studio (bundled JDK: `C:\Program Files\Android\Android Studio\jbr`)
+- Android SDK (`platform-tools` provides adb)
 
-## 1. 编译 APK
+## 1. Build the APK
 
-`gradlew` 启动时需要 `JAVA_HOME`（`gradle.properties` 里的 `org.gradle.java.home` 只作用于 Gradle 守护进程，无法替代它）：
+`gradlew` needs `JAVA_HOME` at startup (`org.gradle.java.home` in `gradle.properties` only affects the Gradle daemon and cannot replace it):
 
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Android\Android Studio\jbr'
@@ -107,55 +109,55 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 .\gradlew.bat assembleRelease --console=plain
 ```
 
-产物：`app\build\outputs\apk\release\virgo-<versionName>.apk`（当前为 `virgo-0.1.7.apk`）
+Artifact: `app\build\outputs\apk\release\virgo-<versionName>.apk` (currently `virgo-0.1.7.apk`)
 
-release 构建复用 debug 密钥签名，因此可直接安装，无需另行配置 keystore。
+The release build reuses the debug signing key, so it can be installed directly without configuring a separate keystore.
 
-调试包用 `.\gradlew.bat assembleDebug --console=plain`，产物在 `app\build\outputs\apk\debug\virgo-0.1.7-debug.apk`。
+For a debug build use `.\gradlew.bat assembleDebug --console=plain`; the artifact is `app\build\outputs\apk\debug\virgo-0.1.7-debug.apk`.
 
-## 2. 运行单元测试
+## 2. Run Unit Tests
 
-打乱与随机源的正确性由金标准测试保证（固定种子 → 与 csTimer 逐字符比对）：
+Scramble and random source correctness is guaranteed by golden-standard tests (fixed seed → character-for-character comparison with csTimer):
 
 ```powershell
 .\gradlew.bat testDebugUnitTest --console=plain
 ```
 
-## 3. 安装到手机
+## 3. Install on a Phone
 
-USB 调试可用时直接安装：
+When USB debugging is available, install directly:
 
 ```powershell
 adb install -r app\build\outputs\apk\release\virgo-0.1.7.apk
 ```
 
-adb 不在 PATH 时用完整路径：
+If adb is not on PATH, use the full path:
 
 ```powershell
 & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r app\build\outputs\apk\release\virgo-0.1.7.apk
 ```
 
-若报 `INSTALL_FAILED_USER_RESTRICTED`（小米等机型的「USB 安装」未开启），改为推送后在手机上手动安装：
+If you get `INSTALL_FAILED_USER_RESTRICTED` (e.g. Xiaomi with "Install via USB" disabled), push and install manually on the phone:
 
 ```powershell
 adb push app\build\outputs\apk\release\virgo-0.1.7.apk /sdcard/Download/
 ```
 
-PATH：
+PATH:
 
 ```powershell
 $env:Path += ";$env:LOCALAPPDATA\Android\Sdk\platform-tools"
 ```
 
-再在手机文件管理里打开 `Download` 目录下的 APK 安装。
+Then open the APK under `Download` in the phone's file manager and install it.
 
-## 完整流程
+## Full Workflow
 
 ```powershell
 .\gradlew.bat assembleRelease
 adb install -r app\build\outputs\apk\release\virgo-0.1.7.apk
 ```
 
-## 许可证
+## License
 
-本项目基于 csTimer 二次开发，遵循 GPLv3。特别感谢csTimer，一个伟大的项目。
+This project is a derivative work based on csTimer and is licensed under GPLv3. Special thanks to csTimer, a great project.
