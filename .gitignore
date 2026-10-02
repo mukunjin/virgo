@@ -1,0 +1,23 @@
+# 构建产物
+build/
+app/build/
+.gradle/
+.kotlin/
+captures/
+*.hprof
+
+# 本机配置（含 SDK 绝对路径，禁止提交）
+local.properties
+
+# IDE 本地配置
+.idea/
+.trae/
+*.iml
+
+# 签名与密钥
+*.jks
+*.keystore
+
+# 系统文件
+.DS_Store
+Thumbs.db
