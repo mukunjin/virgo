@@ -61,6 +61,10 @@ adb 不在 PATH 时用完整路径：
 ```powershell
 adb push app\build\outputs\apk\release\app-release.apk /sdcard/Download/
 ```
+PATH：
+```powershell
+$env:Path += ";$env:LOCALAPPDATA\Android\Sdk\platform-tools"
+```
 
 再在手机文件管理里打开 `Download` 目录下的 APK 安装。
 

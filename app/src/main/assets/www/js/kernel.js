@@ -1155,7 +1155,11 @@ var kernel = execMain(function() {
 			}
 			shortcuts.onTouchStart(e);
 			refocus();
-			timer.onkeydown({which: 32});
+			// 多指同时按压时只触发一次按下：仅当这是落下的第一根手指
+			var touches = e.originalEvent && e.originalEvent.touches;
+			if (!touches || touches.length <= 1) {
+				timer.onkeydown({which: 32});
+			}
 			e.preventDefault && e.preventDefault();
 		});
 		$('#container').bind('touchmove', function(e) {
@@ -1167,7 +1171,11 @@ var kernel = execMain(function() {
 				return;
 			}
 			refocus();
-			timer.onkeyup({which: 32});
+			// 只有所有手指都抬起才算松手，避免其中一指抬起就被误判
+			var touches = e.originalEvent && e.originalEvent.touches;
+			if (!touches || touches.length === 0) {
+				timer.onkeyup({which: 32});
+			}
 			e.preventDefault && e.preventDefault();
 		});
 		$('#container').bind('touch', function(e){
