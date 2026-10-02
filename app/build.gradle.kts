@@ -19,6 +19,8 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            // 不单独配置签名：复用 debug 密钥，直接可安装
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 

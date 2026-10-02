@@ -98,14 +98,9 @@ $body = $body.Replace('<span>csTimer</span>', '<span>Virgo</span>')
 $body = (($body -split "`n") | Where-Object { $_ -notmatch '<\?php' }) -join "`n"
 $body = $body.Trim("`r`n")
 
-# 5.3 关于页：用 zh-cn.php 生成静态 HTML，并塞回 <div id="about">
+# 5.3 关于页：只保留「基于 csTimer」的极简介绍。
 #     help.js 会读取 #about 的子元素来构建帮助面板，所以这里必须保持原来的层级结构。
-$about = Normalize-Newlines (Read-Utf8 (Join-Path $srcRoot 'lang\zh-cn.php'))
-$about = $about -replace '<\?php\s*echo\s*\$version;?\s*\?>', $version
-$about = $about -replace '<h1>csTimer version [^<]*</h1>', "<h1>Virgo —— 基于 csTimer（GPLv3）的安卓魔方计时器</h1>`n<p>内置 csTimer 版本：$version</p>"
-# 去掉所有 php 片段；去掉指向 cstimer.net 站内旧版本页面的死链
-$about = (($about -split "`n") | Where-Object { $_ -notmatch '<\?php' -and $_ -notmatch 'href="/' }) -join "`n"
-$about = $about.Trim("`r`n")
+$about = "<h1>Virgo</h1>`n<p>基于 csTimer（GPLv3）的安卓魔方计时器。</p>`n<p>内置 csTimer 版本：$version</p>"
 
 $aboutDiv = '<div id="about" style="display:none;">' + "`n" + $about + "`n" + '</div>'
 $body = $body.Replace('<div id="about" style="display:none;">' + "`n" + '</div>', $aboutDiv)
