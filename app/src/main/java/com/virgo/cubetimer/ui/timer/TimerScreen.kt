@@ -3,6 +3,7 @@ package com.virgo.cubetimer.ui.timer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,8 +39,9 @@ import com.virgo.cubetimer.ui.theme.VirgoColors
 import kotlin.math.min
 
 /**
- * 计时主界面：上方打乱文本区（含展开图与上一条/下一条）、中央大字 LCD、下方平均与会话信息。
- * 触摸语义复刻 csTimer：第一根手指按下即「按下」，全部松手才「松手」。
+ * 计时主界面：顶部打乱区（打乱文本 + 上一条/下一条/刷新）、
+ * 中央大字 LCD、下方 ao5/ao12，打乱展开图固定在右下角。
+ * 触摸语义复刻 csTimer：第一根手指按下即「按下」，全部松手才「松手」，全屏任意位置均可计时。
  */
 @Composable
 fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modifier) {
@@ -67,16 +68,15 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
                     var down = false
                     while (true) {
                         val event = awaitPointerEvent()
-                        val pressedChanges = event.changes.filter { it.pressed }
-                        if (pressedChanges.isEmpty()) {
+                        val active = event.changes.filter { it.pressed }
+                        if (active.isEmpty()) {
                             // 全部手指抬起才松手（复刻 csTimer 的 touches.length === 0 判定）
                             if (down) {
                                 down = false
                                 pressed = false
                                 vm.onRelease()
                             }
-                        } else if (!down && pressedChanges.any { !it.isConsumed }) {
-                            // 第一根未被子控件（左栏/浮窗按钮）消费的手指按下即开始
+                        } else if (!down) {
                             down = true
                             pressed = true
                             vm.onPress()
@@ -85,16 +85,23 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
                 }
             },
     ) {
-        // 同时受高度与宽度约束：竖屏时按宽度收缩，避免大字溢出被裁切
-        val lcdSize = min(maxHeight.value * 0.34f, maxWidth.value * 0.19f).sp
-        val netHeight = (maxHeight.value * 0.2f).coerceIn(56f, 110f).dp
+        val landscape = maxWidth > maxHeight
+        // 以屏幕短边统一定标（横屏的 maxHeight、竖屏的 maxWidth 都是短边）：
+        // 竖屏系数大于横屏，从而保证「竖屏字号 > 横屏字号」；同时按短边缩放，避免单行时间溢出
+        val shortSide = min(maxWidth.value, maxHeight.value)
+        val base = shortSide * if (landscape) 0.23f else 0.25f
+        // 再按当前文本长度收缩：等宽字体单字符约占 0.62em。
+        // 计时超过一分钟位数变多，据此收缩可确保任何长度都不会横向溢出。
+        val chars = displayText.length.coerceAtLeast(5)
+        val fitByWidth = (maxWidth.value - 32f) / (chars * 0.62f)
+        val lcdSize = min(base, fitByWidth).sp
 
         Column(modifier = Modifier.fillMaxSize()) {
-            Column(
+            // 顶部打乱区（全屏均可计时）
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = LeftBarWidth + 12.dp, end = 12.dp, top = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .padding(start = 16.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
             ) {
                 ScrambleBar(
                     ui = ui,
@@ -103,15 +110,6 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
                     onRefresh = { vm.generateScramble() },
                     modifier = Modifier.fillMaxWidth(),
                 )
-                if (ui.netFacelets.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    CubeNet(
-                        facelets = ui.netFacelets,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(netHeight),
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -134,26 +132,35 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
                 ui = ui,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    // 底部为胶囊切换栏留出空间，避免遮挡 ao5/ao12
+                    .padding(bottom = 84.dp),
+            )
+        }
+
+        // 打乱展开图固定到右下角
+        if (ui.netFacelets.isNotEmpty()) {
+            CubeNet(
+                facelets = ui.netFacelets,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 14.dp, bottom = 84.dp)
+                    .size(if (landscape) 132.dp else 104.dp),
             )
         }
     }
 }
 
-/** 左侧图标列宽度，供内容避让。 */
-val LeftBarWidth = 64.dp
-
 private fun lcdColor(status: TimerEngine.Status, pressed: Boolean, useInspection: Boolean) = when (status) {
     TimerEngine.Status.STOPPED -> VirgoColors.TimerRed
     TimerEngine.Status.READY -> if (pressed) VirgoColors.TimerGreen else VirgoColors.OnBackground
     TimerEngine.Status.INSPECTING -> if (pressed) VirgoColors.TimerYellow else VirgoColors.TimerRed
-    TimerEngine.Status.READY_INSPECT -> if (pressed) VirgoColors.TimerGreen else VirgoColors.OnBackground
     TimerEngine.Status.RUNNING -> if (pressed) VirgoColors.TimerGreen else VirgoColors.OnBackground
     TimerEngine.Status.IDLE ->
         if (pressed) (if (useInspection) VirgoColors.TimerGreen else VirgoColors.TimerRed)
         else VirgoColors.OnBackground
 }
 
+/** 打乱区：打乱文本在上，`◀ ▶ ↻` 在下方居中（竖屏/横屏一致）。 */
 @Composable
 private fun ScrambleBar(
     ui: TimerUiState,
@@ -167,7 +174,7 @@ private fun ScrambleBar(
         2 -> TextAlign.End
         else -> TextAlign.Center
     }
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = ui.scramble.ifEmpty { if (ui.generating) "生成中…" else "" },
             color = VirgoColors.OnSurfaceVariant,
@@ -175,45 +182,44 @@ private fun ScrambleBar(
             fontFamily = TimerFontFamily,
             textAlign = align,
             softWrap = ui.scrambleWrap,
-            modifier = Modifier.weight(1f).padding(top = 4.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        NavButton(label = "◀", enabled = ui.canPrev, onClick = onPrev)
-        NavButton(label = "▶", enabled = true, onClick = onNext)
-        NavButton(label = "↻", enabled = !ui.generating, onClick = onRefresh)
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            NavButton(label = "◀", enabled = ui.canPrev, onClick = onPrev)
+            NavButton(label = "▶", enabled = true, onClick = onNext)
+            NavButton(label = "↻", enabled = !ui.generating, onClick = onRefresh)
+        }
     }
 }
 
+/** 药丸按钮：Material 全圆角，比原方形略大，便于点按。 */
 @Composable
 private fun NavButton(label: String, enabled: Boolean, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(percent = 50)
     Box(
         modifier = Modifier
-            .size(30.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .border(1.dp, VirgoColors.Border, RoundedCornerShape(4.dp))
+            .size(width = 52.dp, height = 40.dp)
+            .clip(shape)
+            .background(if (enabled) VirgoColors.ButtonFill else VirgoColors.Surface)
+            .border(1.dp, VirgoColors.Border, shape)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
-            fontSize = 13.sp,
-            color = if (enabled) VirgoColors.OnSurfaceVariant else VirgoColors.Disabled,
+            fontSize = 16.sp,
+            color = if (enabled) VirgoColors.OnButton else VirgoColors.Disabled,
         )
     }
 }
 
+/** 底部统计：仅保留 ao5 / ao12。 */
 @Composable
 private fun SessionInfo(ui: TimerUiState, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        // 复刻 csTimer `#avgstr`：两行「ao5 / ao12」
         AvgLine("ao5", ui.stats.ao5, ui.useMilli)
         AvgLine("ao12", ui.stats.ao12, ui.useMilli)
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "${ui.sessionName.ifEmpty { "会话" }} · 共 ${ui.solves.size} 次",
-            color = VirgoColors.OnSurfaceVariant,
-            fontSize = 13.sp,
-        )
     }
 }
 

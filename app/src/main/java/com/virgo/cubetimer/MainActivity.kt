@@ -24,8 +24,8 @@ class MainActivity : ComponentActivity() {
         // 计时过程中保持屏幕常亮
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // 启动首帧就用白底，避免状态栏/首帧闪烁
-        window.setBackgroundDrawable(ColorDrawable(Color.WHITE))
+        // 启动首帧就用黑底（与暗色主题一致），避免白屏闪烁
+        window.setBackgroundDrawable(ColorDrawable(Color.BLACK))
 
         setContent {
             VirgoApp()

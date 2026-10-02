@@ -1,11 +1,17 @@
 package com.virgo.cubetimer.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,61 +20,71 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.virgo.cubetimer.ui.about.AboutScreen
-import com.virgo.cubetimer.ui.menu.FloatingPanel
-import com.virgo.cubetimer.ui.menu.LeftBar
+import com.virgo.cubetimer.ui.menu.CapsuleBar
 import com.virgo.cubetimer.ui.menu.Panel
 import com.virgo.cubetimer.ui.settings.SettingsScreen
 import com.virgo.cubetimer.ui.stats.StatsScreen
 import com.virgo.cubetimer.ui.theme.VirgoColors
 import com.virgo.cubetimer.ui.theme.VirgoTheme
-import com.virgo.cubetimer.ui.timer.LeftBarWidth
 import com.virgo.cubetimer.ui.timer.TimerScreen
 import com.virgo.cubetimer.ui.timer.TimerViewModel
 
 /**
- * 原生界面根节点：左侧图标列 + 计时主界面 + 浮动窗格（复刻 csTimer 布局）。
+ * 原生界面根节点：整屏在「计时 / 成绩 / 设置 / 关于 Virgo」之间切换，
+ * 底部中央常驻分段胶囊作为切换入口。
  */
 @Composable
 fun VirgoApp() {
     VirgoTheme {
         val vm: TimerViewModel = viewModel()
         val ui by vm.ui.collectAsState()
-        var panel by remember { mutableStateOf(Panel.NONE) }
+        var panel by remember { mutableStateOf(Panel.TIMER) }
 
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .background(VirgoColors.Background),
         ) {
-            TimerScreen(ui = ui, vm = vm, modifier = Modifier.fillMaxSize())
-
-            LeftBar(
-                current = panel,
-                onSelect = { panel = if (panel == it) Panel.NONE else it },
-                modifier = Modifier.align(Alignment.TopStart),
-            )
-
-            if (panel != Panel.NONE) {
-                FloatingPanel(
-                    title = panel.title,
-                    onClose = { panel = Panel.NONE },
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(start = LeftBarWidth + 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp)
-                        .fillMaxWidth()
-                        .heightIn(max = 560.dp),
-                ) {
-                    when (panel) {
-                        Panel.SETTINGS -> SettingsScreen(ui = ui, vm = vm)
-                        Panel.STATS -> StatsScreen(ui = ui, vm = vm)
-                        Panel.ABOUT -> AboutScreen()
-                        Panel.NONE -> Unit
-                    }
-                }
+            when (panel) {
+                Panel.TIMER -> TimerScreen(ui = ui, vm = vm, modifier = Modifier.fillMaxSize())
+                Panel.STATS -> SheetScreen(title = "成绩") { StatsScreen(ui = ui, vm = vm) }
+                Panel.SETTINGS -> SheetScreen(title = "设置") { SettingsScreen(ui = ui, vm = vm) }
+                Panel.ABOUT -> SheetScreen(title = "关于 Virgo") { AboutScreen() }
             }
+
+            CapsuleBar(
+                current = panel,
+                onSelect = { panel = it },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 14.dp)
+                    .width(minOf(maxWidth * 0.82f, 400.dp)),
+            )
         }
+    }
+}
+
+/** 非计时界面的通用容器：顶部标题 + 可滚动内容 + 底部为胶囊留白。 */
+@Composable
+private fun SheetScreen(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 20.dp, end = 20.dp, top = 28.dp, bottom = 120.dp),
+    ) {
+        Text(
+            text = title,
+            color = VirgoColors.OnBackground,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        content()
     }
 }

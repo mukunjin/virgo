@@ -91,19 +91,20 @@ private fun SwitchRow(
 
 @Composable
 private fun SegButton(label: String, selected: Boolean, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(percent = 50)
     Box(
         modifier = Modifier
-            .width(56.dp)
-            .height(34.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .background(if (selected) VirgoColors.SurfaceVariant else VirgoColors.Background)
-            .border(1.dp, VirgoColors.Border, RoundedCornerShape(4.dp))
+            .width(64.dp)
+            .height(40.dp)
+            .clip(shape)
+            .background(if (selected) VirgoColors.ButtonFill else VirgoColors.Surface)
+            .border(1.dp, VirgoColors.Border, shape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
-            color = if (selected) VirgoColors.OnBackground else VirgoColors.OnSurfaceVariant,
+            color = if (selected) VirgoColors.OnButton else VirgoColors.OnSurfaceVariant,
             fontSize = 14.sp,
             fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
         )

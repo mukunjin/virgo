@@ -180,7 +180,7 @@ class TimerViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // ---- 会话 ----
+    // ---- 分组 ----
 
     fun selectSession(id: Long) {
         if (id == _state.value.sessionId) return
@@ -190,9 +190,10 @@ class TimerViewModel(app: Application) : AndroidViewModel(app) {
         generateScramble()
     }
 
-    fun addSession(name: String) {
+    /** 新建分组：名字由仓库自动编号，避免删除后重名。 */
+    fun addSession() {
         viewModelScope.launch {
-            val id = repo.addSession(name)
+            val id = repo.addSession()
             selectSession(id)
         }
     }

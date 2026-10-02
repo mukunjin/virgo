@@ -16,26 +16,41 @@ class SessionRepository(private val dao: VirgoDao) {
 
     fun observeSolves(sessionId: Long): Flow<List<SolveEntity>> = dao.observeSolves(sessionId)
 
-    /** 确保至少存在一个会话（首次启动时创建默认会话）。 */
+    /** 确保至少存在一个分组（首次启动时创建默认分组）。 */
     suspend fun ensureDefaultSession(): Long {
         val existing = dao.sessions()
         if (existing.isNotEmpty()) {
+            // 兼容旧版本数据：把历史的「会话 N」改名为「分组 N」
+            existing.filter { it.name.startsWith("会话 ") }
+                .forEach { dao.renameSession(it.id, it.name.replaceFirst("会话 ", "分组 ")) }
             return existing.first().id
         }
         return dao.insertSession(
             SessionEntity(
-                name = "会话 1",
+                name = "分组 1",
                 orderIndex = 0,
                 createdAt = System.currentTimeMillis() / 1000,
             )
         )
     }
 
-    suspend fun addSession(name: String): Long {
+    /**
+     * 生成不与现有分组重名的名字：取现有名字中最大编号 + 1。
+     * 直接用「数量 + 1」会在删除后产生重名（如删除「分组 1」后再新建又得到「分组 2」）。
+     */
+    private suspend fun nextGroupName(): String {
+        val maxIndex = dao.sessions()
+            .mapNotNull { it.name.substringAfterLast(' ').toIntOrNull() }
+            .maxOrNull() ?: 0
+        return "分组 ${maxIndex + 1}"
+    }
+
+    /** 新建分组（名字自动编号，保证不重名）。 */
+    suspend fun addSession(): Long {
         val order = dao.sessionCount()
         return dao.insertSession(
             SessionEntity(
-                name = name,
+                name = nextGroupName(),
                 orderIndex = order,
                 createdAt = System.currentTimeMillis() / 1000,
             )

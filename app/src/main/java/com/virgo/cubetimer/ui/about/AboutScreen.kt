@@ -12,40 +12,55 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.virgo.cubetimer.ui.theme.VirgoColors
 
-/** 关于窗格。 */
+/** 关于界面：项目简介 + 致谢 + 作者信息。 */
 @Composable
 fun AboutScreen() {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Virgo 1.0",
-            color = VirgoColors.OnBackground,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "三阶魔方计时器（333）",
+            text = "一个简易轻巧的Android原生三阶魔方计时器。Kotlin+Jetpack Compose实现。",
             color = VirgoColors.OnSurfaceVariant,
-            fontSize = 14.sp,
+            fontSize = 15.sp,
+            lineHeight = 23.sp,
         )
-        Spacer(modifier = Modifier.height(14.dp))
-        AboutLine("打乱算法", "完全复刻 csTimer（随机态 + min2phase 逆解）")
-        AboutLine("计时精度", "纳秒计时，显示到 0.01 秒")
-        AboutLine("数据存储", "成绩保存在本机数据库，卸载即清除")
-        AboutLine("网络", "完全离线，未申请联网权限")
-        Spacer(modifier = Modifier.height(14.dp))
+
+        Spacer(modifier = Modifier.height(24.dp))
+        SectionTitle("致谢")
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "成绩数据不会上传到任何服务器。",
-            color = VirgoColors.Disabled,
-            fontSize = 12.sp,
+            text = "csTimer",
+            color = VirgoColors.OnBackground,
+            fontSize = 15.sp,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = "打乱与计时逻辑参考并复刻自 csTimer。",
+            color = VirgoColors.OnSurfaceVariant,
+            fontSize = 13.sp,
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+        SectionTitle("作者")
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Virgo 作者 mukunjin",
+            color = VirgoColors.OnBackground,
+            fontSize = 15.sp,
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = "仓库：https://github.com/mukunjin/virgo",
+            color = VirgoColors.OnSurfaceVariant,
+            fontSize = 13.sp,
         )
     }
 }
 
 @Composable
-private fun AboutLine(title: String, value: String) {
-    Column(modifier = Modifier.fillMaxWidth().height(46.dp)) {
-        Text(text = title, color = VirgoColors.OnBackground, fontSize = 14.sp)
-        Text(text = value, color = VirgoColors.OnSurfaceVariant, fontSize = 12.sp)
-    }
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        color = VirgoColors.OnBackground,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Bold,
+    )
 }

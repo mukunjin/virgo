@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey
 data class SessionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    /** 会话名，如 "会话 1"。 */
+    /** 分组名，如 "分组 1"。 */
     val name: String,
     /** 展示排序（越小越靠前）。 */
     val orderIndex: Int,

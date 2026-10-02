@@ -11,7 +11,6 @@ local.properties
 
 # IDE 本地配置
 .idea/
-.trae/
 *.iml
 
 # 签名与密钥

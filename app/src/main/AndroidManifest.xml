@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:enableOnBackInvokedCallback="false"
         android:supportsRtl="false"
-        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+        android:theme="@style/Theme.Virgo">
 
         <activity
             android:name=".MainActivity"

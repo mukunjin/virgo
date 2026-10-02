@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Virgo</string>
-    <string name="choose_file">选择文件</string>
-    <string name="saved_to">已保存到 %1$s</string>
-    <string name="save_failed">保存失败：%1$s</string>
 </resources>

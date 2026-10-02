@@ -15,6 +15,8 @@ android {
         applicationId = "com.virgo.cubetimer"
         minSdk = 24
         targetSdk = 37
+        // 版本号唯一来源：APK 与界面统一读取此处
+        // 界面如需显示，请使用 BuildConfig.VERSION_NAME（需 buildFeatures.buildConfig = true）
         versionCode = 1
         versionName = "1.0"
     }
@@ -29,6 +31,8 @@ android {
 
     buildFeatures {
         compose = true
+        // 生成 BuildConfig，使界面可读取与 APK 一致的 versionName
+        buildConfig = true
     }
 
     compileOptions {

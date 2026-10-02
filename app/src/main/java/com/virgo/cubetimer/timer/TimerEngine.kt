@@ -13,7 +13,7 @@ data class TimerConfig(
     val phases: Int = 1,
     /** 是否开启 15 秒观察（csTimer `useIns`，默认关闭）。 */
     val useInspection: Boolean = false,
-    /** 长按进入就绪的时长（csTimer `preTime`，默认 300ms）。 */
+    /** 长按判定时长（csTimer `preTime`，默认 300ms）：达到后才开始观察倒计时或进入就绪。 */
     val preTimeMs: Long = 300L,
 )
 
@@ -35,7 +35,8 @@ data class TimerResult(
  * ```
  * IDLE --按下--> (300ms 长按) READY --松手--> RUNNING --按下--> STOPPED --松手--> IDLE
  * ```
- * 开启观察时：`IDLE --按下--> READY_INSPECT --松手--> INSPECTING --按下/长按--> READY --松手--> RUNNING`。
+ * 开启观察时：长按 300ms 才开始观察倒计时，再次长按进入就绪：
+ * `IDLE --长按--> INSPECTING --长按--> READY --松手--> RUNNING`。
  */
 class TimerEngine(
     private val scope: CoroutineScope,
@@ -44,7 +45,7 @@ class TimerEngine(
     private val onChanged: () -> Unit,
 ) {
 
-    enum class Status { IDLE, READY, INSPECTING, READY_INSPECT, STOPPED, RUNNING }
+    enum class Status { IDLE, READY, INSPECTING, STOPPED, RUNNING }
 
     var status: Status = Status.IDLE
         private set
@@ -87,15 +88,12 @@ class TimerEngine(
             }
 
             Status.IDLE, Status.INSPECTING -> {
-                val readyFrom = if (config().useInspection) Status.INSPECTING else Status.IDLE
-                if (status == readyFrom && pressReadyJob == null) {
+                // 长按 preTime 后：IDLE 开始观察倒计时（未开观察则直接就绪），INSPECTING 进入就绪
+                if (pressReadyJob == null) {
                     pressReadyJob = scope.launch {
                         delay(config().preTimeMs)
                         pressReady()
                     }
-                } else if (status == Status.IDLE && config().useInspection) {
-                    startMs = t
-                    status = Status.READY_INSPECT
                 }
             }
 
@@ -133,11 +131,6 @@ class TimerEngine(
                 status = Status.RUNNING
             }
 
-            Status.READY_INSPECT -> {
-                startMs = t
-                status = Status.INSPECTING
-            }
-
             else -> Unit
         }
         onChanged()
@@ -153,15 +146,28 @@ class TimerEngine(
     }
 
     private fun pressReady() {
-        if (status == Status.IDLE || status == Status.INSPECTING) {
-            if (status == Status.IDLE) {
+        when (status) {
+            Status.IDLE -> {
                 cleared = true
                 lastResultMs = 0L
+                if (config().useInspection) {
+                    // 长按到达才真正开始 15 秒观察倒计时
+                    startMs = now()
+                    status = Status.INSPECTING
+                } else {
+                    status = Status.READY
+                }
             }
-            status = Status.READY
-            pressReadyJob = null
-            onChanged()
+
+            Status.INSPECTING -> status = Status.READY
+
+            else -> {
+                pressReadyJob = null
+                return
+            }
         }
+        pressReadyJob = null
+        onChanged()
     }
 
     private fun clearPressReady() {
@@ -171,7 +177,7 @@ class TimerEngine(
 
     /** 当前已运行/观察的毫秒数。 */
     fun elapsedMs(): Long = when (status) {
-        Status.RUNNING, Status.INSPECTING, Status.READY_INSPECT -> now() - startMs
+        Status.RUNNING, Status.INSPECTING -> now() - startMs
         else -> 0L
     }
 
@@ -184,5 +190,5 @@ class TimerEngine(
     }
 
     val isRunning: Boolean get() = status == Status.RUNNING
-    val isInspecting: Boolean get() = status == Status.INSPECTING || status == Status.READY_INSPECT
+    val isInspecting: Boolean get() = status == Status.INSPECTING
 }
