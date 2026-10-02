@@ -6,6 +6,10 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+// 版本号唯一来源：根目录 gradle.properties 的 virgo.versionName / virgo.versionCode
+val virgoVersionName: String = providers.gradleProperty("virgo.versionName").get()
+val virgoVersionCode: Int = providers.gradleProperty("virgo.versionCode").get().toInt()
+
 android {
     namespace = "com.virgo.cubetimer"
     compileSdk = 37
@@ -15,10 +19,9 @@ android {
         applicationId = "com.virgo.cubetimer"
         minSdk = 24
         targetSdk = 37
-        // 版本号唯一来源：APK 与界面统一读取此处
-        // 界面如需显示，请使用 BuildConfig.VERSION_NAME（需 buildFeatures.buildConfig = true）
-        versionCode = 1
-        versionName = "1.0"
+        // 界面如需显示版本，请使用 BuildConfig.VERSION_NAME（buildFeatures.buildConfig 已开启）
+        versionCode = virgoVersionCode
+        versionName = virgoVersionName
     }
 
     buildTypes {
@@ -38,6 +41,16 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+androidComponents {
+    // 产物命名为 virgo-<版本号>.apk（debug 包追加 -debug），版本号与 APK 内一致（同一处配置）
+    onVariants { variant ->
+        val suffix = if (variant.buildType == "release") "" else "-${variant.buildType}"
+        variant.outputs.forEach { output ->
+            output.outputFileName.set("virgo-$virgoVersionName$suffix.apk")
+        }
     }
 }
 

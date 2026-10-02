@@ -96,20 +96,25 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
         val fitByWidth = (maxWidth.value - 32f) / (chars * 0.62f)
         val lcdSize = min(base, fitByWidth).sp
 
+        // 从进入观察到拍表（含观察、就绪、计时中）之间，屏幕上只保留时间
+        val focus = ui.status.hidesOtherUi
+
         Column(modifier = Modifier.fillMaxSize()) {
-            // 顶部打乱区（全屏均可计时）
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
-            ) {
-                ScrambleBar(
-                    ui = ui,
-                    onPrev = { vm.prevScramble() },
-                    onNext = { vm.nextScramble() },
-                    onRefresh = { vm.generateScramble() },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            // 顶部打乱区（全屏均可计时）。观察开始到拍表之间只留时间，其余元素隐去
+            if (!focus) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
+                ) {
+                    ScrambleBar(
+                        ui = ui,
+                        onPrev = { vm.prevScramble() },
+                        onNext = { vm.nextScramble() },
+                        onRefresh = { vm.generateScramble() },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -128,17 +133,19 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
 
             Spacer(modifier = Modifier.weight(1f))
 
-            SessionInfo(
-                ui = ui,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    // 底部为胶囊切换栏留出空间，避免遮挡 ao5/ao12
-                    .padding(bottom = 84.dp),
-            )
+            if (!focus) {
+                SessionInfo(
+                    ui = ui,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        // 底部为胶囊切换栏留出空间，避免遮挡 ao5/ao12
+                        .padding(bottom = 84.dp),
+                )
+            }
         }
 
-        // 打乱展开图固定到右下角
-        if (ui.netFacelets.isNotEmpty()) {
+        // 打乱展开图固定到右下角（计时聚焦时一并隐去）
+        if (!focus && ui.netFacelets.isNotEmpty()) {
             CubeNet(
                 facelets = ui.netFacelets,
                 modifier = Modifier
@@ -149,6 +156,15 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
         }
     }
 }
+
+/**
+ * 从开始观察到拍表之间：观察中、就绪、计时中三种状态都只显示时间，
+ * 打乱文本、◀ ▶ ↻、ao5/ao12、打乱展开图与底部胶囊一并隐去；拍表（STOPPED）后恢复。
+ */
+internal val TimerEngine.Status.hidesOtherUi: Boolean
+    get() = this == TimerEngine.Status.INSPECTING ||
+        this == TimerEngine.Status.READY ||
+        this == TimerEngine.Status.RUNNING
 
 private fun lcdColor(status: TimerEngine.Status, pressed: Boolean, useInspection: Boolean) = when (status) {
     TimerEngine.Status.STOPPED -> VirgoColors.TimerRed

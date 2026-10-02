@@ -33,6 +33,7 @@ import com.virgo.cubetimer.ui.theme.VirgoColors
 import com.virgo.cubetimer.ui.theme.VirgoTheme
 import com.virgo.cubetimer.ui.timer.TimerScreen
 import com.virgo.cubetimer.ui.timer.TimerViewModel
+import com.virgo.cubetimer.ui.timer.hidesOtherUi
 
 /**
  * 原生界面根节点：整屏在「计时 / 成绩 / 设置 / 关于 Virgo」之间切换，
@@ -57,14 +58,17 @@ fun VirgoApp() {
                 Panel.ABOUT -> SheetScreen(title = "关于 Virgo") { AboutScreen() }
             }
 
-            CapsuleBar(
-                current = panel,
-                onSelect = { panel = it },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 14.dp)
-                    .width(minOf(maxWidth * 0.82f, 400.dp)),
-            )
+            // 观察开始到拍表之间隐去底部胶囊，屏幕上只留时间
+            if (!ui.status.hidesOtherUi) {
+                CapsuleBar(
+                    current = panel,
+                    onSelect = { panel = it },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 12.dp)
+                        .width(minOf(maxWidth * 0.76f, 360.dp)),
+                )
+            }
         }
     }
 }

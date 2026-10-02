@@ -10,9 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.virgo.cubetimer.BuildConfig
 import com.virgo.cubetimer.ui.theme.VirgoColors
 
-/** 关于界面：项目简介 + 致谢 + 作者信息。 */
+/** 关于界面：项目简介 + 版本号 + 致谢 + 作者信息。 */
 @Composable
 fun AboutScreen() {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -21,6 +22,14 @@ fun AboutScreen() {
             color = VirgoColors.OnSurfaceVariant,
             fontSize = 15.sp,
             lineHeight = 23.sp,
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+        // 版本号与 APK 同源（根目录 gradle.properties → BuildConfig）
+        Text(
+            text = "版本 ${BuildConfig.VERSION_NAME}",
+            color = VirgoColors.OnSurfaceVariant,
+            fontSize = 13.sp,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
