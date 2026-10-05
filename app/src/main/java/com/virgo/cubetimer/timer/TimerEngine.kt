@@ -192,6 +192,8 @@ class TimerEngine(
         Status.RUNNING -> now() - startMs
         // 观察倒计时松手后才开始；未开始前按 0 计，显示满额
         Status.INSPECTING -> if (inspectionStarted) now() - startMs else 0L
+        // 就绪（正式计时开始前的长按）期间观察倒计时继续走，供界面继续显示倒计时
+        Status.READY -> if (config().useInspection && inspectionStarted) now() - startMs else 0L
         else -> 0L
     }
 

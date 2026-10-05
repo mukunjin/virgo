@@ -121,16 +121,20 @@ class TimerViewModel(app: Application) : AndroidViewModel(app) {
         val useMilli = _state.value.useMilli
         return when (_state.value.status) {
             TimerEngine.Status.RUNNING -> TimeFormat.pretty(engine.elapsedMs(), useMilli)
-            TimerEngine.Status.INSPECTING -> {
-                val t = engine.elapsedMs()
-                when {
-                    t > 17_000 -> "DNF"
-                    t > 15_000 -> "+2"
-                    else -> (15 - (t / 1000).toInt()).toString()
-                }
-            }
+            TimerEngine.Status.INSPECTING -> inspectionText(engine.elapsedMs())
+            // 就绪（正式计时开始前的长按）仍显示观察倒计时，而不是 0.000
+            TimerEngine.Status.READY ->
+                if (_state.value.useInspection) inspectionText(engine.elapsedMs())
+                else TimeFormat.pretty(engine.staticDisplayMs(), useMilli)
             else -> TimeFormat.pretty(engine.staticDisplayMs(), useMilli)
         }
+    }
+
+    /** 观察倒计时文本：15~1 秒、超时 +2、再超时 DNF。 */
+    private fun inspectionText(elapsedMs: Long): String = when {
+        elapsedMs > 17_000 -> "DNF"
+        elapsedMs > 15_000 -> "+2"
+        else -> (15 - (elapsedMs / 1000).toInt()).toString()
     }
 
     // ---- 打乱 ----

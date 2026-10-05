@@ -49,10 +49,12 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
     var tickMs by remember { mutableLongStateOf(0L) }
 
     val ticking = ui.status == TimerEngine.Status.RUNNING ||
-        ui.status == TimerEngine.Status.INSPECTING
+        ui.status == TimerEngine.Status.INSPECTING ||
+        // 就绪时长按期间观察倒计时继续走，需持续刷新
+        (ui.status == TimerEngine.Status.READY && ui.useInspection)
 
     // 运行/观察时每帧刷新（等价 csTimer 的 requestAnimFrame 循环）
-    LaunchedEffect(ui.status) {
+    LaunchedEffect(ui.status, ui.useInspection) {
         while (ticking) {
             androidx.compose.runtime.withFrameNanos { tickMs = vm.elapsedMs() }
         }
