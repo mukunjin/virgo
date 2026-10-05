@@ -21,6 +21,9 @@ private const val GLYPH_WIDTH = 0.6f
 /** 分隔符（'.' / ':'）的占位宽度系数。 */
 private const val NARROW_WIDTH = 0.3f
 
+/** 相邻字符之间的间距系数（间距 = 字高 * 该值）。 */
+private const val GAP = 0.09f
+
 // 七段段码位标志
 private const val SEG_A = 1
 private const val SEG_B = 2
@@ -48,7 +51,7 @@ fun SevenSegmentDisplay(
         if (text.isEmpty()) return@Canvas
         val full = size.height
         val stroke = full * 0.10f
-        val gap = full * 0.09f
+        val gap = full * GAP
         val dotIndex = text.indexOf('.')
 
         fun heightOf(i: Int): Float =
@@ -70,6 +73,23 @@ fun SevenSegmentDisplay(
             x += widths[i] + gap
         }
     }
+}
+
+/**
+ * 返回 [text] 用七段管绘制时所需的总宽度（以整字高为单位）。
+ * 用于按可用宽度精确反推字号，避免放大后横向溢出。
+ */
+fun sevenSegmentWidthFactor(text: String): Float {
+    if (text.isEmpty()) return 0f
+    val dotIndex = text.indexOf('.')
+    var w = 0f
+    text.forEachIndexed { i, c ->
+        val h = if (dotIndex >= 0 && i > dotIndex) DECIMAL_SCALE else 1f
+        val cw = if (c == '.' || c == ':') NARROW_WIDTH else GLYPH_WIDTH
+        w += cw * h
+    }
+    w += GAP * (text.length - 1).coerceAtLeast(0)
+    return w
 }
 
 private fun DrawScope.drawGlyph(

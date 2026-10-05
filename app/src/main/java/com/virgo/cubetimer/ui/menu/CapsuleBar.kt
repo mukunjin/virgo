@@ -44,9 +44,9 @@ enum class Panel(val title: String) {
     ABOUT("关于"),
 }
 
-private val ThumbHeight = 44.dp
-private val BarHeight = 52.dp
-private val ThumbGap = 9.dp
+private val ThumbHeight = 38.dp
+private val BarHeight = 46.dp
+private val ThumbGap = 8.dp
 
 /**
  * 底部分段胶囊：深灰轨道 + 白色实心指示块。
@@ -159,7 +159,7 @@ fun CapsuleBar(current: Panel, onSelect: (Panel) -> Unit, modifier: Modifier = M
                     Text(
                         text = panel.title,
                         color = if (selected) VirgoColors.OnButton else VirgoColors.OnSurfaceVariant,
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
                         textAlign = TextAlign.Center,
                     )

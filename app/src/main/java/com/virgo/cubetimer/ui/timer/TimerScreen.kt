@@ -91,11 +91,11 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
         // 以屏幕短边统一定标（横屏的 maxHeight、竖屏的 maxWidth 都是短边）：
         // 竖屏系数大于横屏，从而保证「竖屏字号 > 横屏字号」；同时按短边缩放，避免单行时间溢出
         val shortSide = min(maxWidth.value, maxHeight.value)
-        val base = shortSide * if (landscape) 0.23f else 0.25f
-        // 再按当前文本长度收缩：等宽字体单字符约占 0.62em。
-        // 计时超过一分钟位数变多，据此收缩可确保任何长度都不会横向溢出。
-        val chars = displayText.length.coerceAtLeast(5)
-        val fitByWidth = (maxWidth.value - 32f) / (chars * 0.62f)
+        val base = shortSide * if (landscape) 0.30f else 0.34f
+        // 按七段管实际占宽（含小数点后 2/3 的窄字）反推可容纳字号，
+        // 从而在放大字号的同时确保任何长度都不会横向溢出。
+        val widthFactor = sevenSegmentWidthFactor(displayText).coerceAtLeast(2f)
+        val fitByWidth = (maxWidth.value - 32f) / widthFactor
         val lcdSize = min(base, fitByWidth).sp
 
         // 从进入观察到拍表（含观察、就绪、计时中）之间，屏幕上只保留时间
@@ -139,7 +139,7 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
                     modifier = Modifier
                         .fillMaxWidth()
                         // 底部为胶囊切换栏留出空间，避免遮挡 ao5/ao12
-                        .padding(bottom = 84.dp),
+                        .padding(bottom = 72.dp),
                 )
             }
         }
@@ -150,7 +150,7 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
                 facelets = ui.netFacelets,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 14.dp, bottom = 84.dp)
+                    .padding(end = 14.dp, bottom = 72.dp)
                     .size(if (landscape) 132.dp else 104.dp),
             )
         }
