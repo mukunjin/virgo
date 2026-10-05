@@ -43,12 +43,6 @@ fun SettingsScreen(ui: TimerUiState, vm: TimerViewModel) {
             onChange = { vm.setUseMilli(it) },
         )
         Spacer(modifier = Modifier.height(12.dp))
-        SwitchRow(
-            title = "打乱自动换行",
-            checked = ui.scrambleWrap,
-            onChange = { vm.setScrambleWrap(it) },
-        )
-        Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "打乱对齐",
             color = VirgoColors.OnBackground,

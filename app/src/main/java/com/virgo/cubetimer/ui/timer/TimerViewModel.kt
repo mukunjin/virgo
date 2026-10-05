@@ -41,7 +41,6 @@ data class TimerUiState(
     val sessionName: String = "",
     val useInspection: Boolean = false,
     val useMilli: Boolean = true,
-    val scrambleWrap: Boolean = true,
     val scrambleAlign: Int = 1,
 )
 
@@ -249,11 +248,6 @@ class TimerViewModel(app: Application) : AndroidViewModel(app) {
         engine.cancel()
     }
 
-    fun setScrambleWrap(value: Boolean) {
-        settings.scrambleWrap = value
-        _state.update { it.copy(scrambleWrap = value) }
-    }
-
     fun setScrambleAlign(value: Int) {
         settings.scrambleAlign = value
         _state.update { it.copy(scrambleAlign = value) }
@@ -295,7 +289,6 @@ class TimerViewModel(app: Application) : AndroidViewModel(app) {
             it.copy(
                 useInspection = settings.useInspection,
                 useMilli = settings.useMilli,
-                scrambleWrap = settings.scrambleWrap,
                 scrambleAlign = settings.scrambleAlign,
             )
         }

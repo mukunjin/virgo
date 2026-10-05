@@ -21,11 +21,6 @@ class SettingsRepository(context: Context) {
         get() = prefs.getBoolean(KEY_USE_INS, false)
         set(value) = prefs.edit().putBoolean(KEY_USE_INS, value).apply()
 
-    /** 打乱文本是否自动换行。 */
-    var scrambleWrap: Boolean
-        get() = prefs.getBoolean(KEY_SCR_WRAP, true)
-        set(value) = prefs.edit().putBoolean(KEY_SCR_WRAP, value).apply()
-
     /** 打乱文本水平对齐：0 左、1 居中、2 右。 */
     var scrambleAlign: Int
         get() = prefs.getInt(KEY_SCR_ALIGN, 1)
@@ -61,7 +56,6 @@ class SettingsRepository(context: Context) {
 
         const val KEY_SCR_TYPE = "scrType"
         const val KEY_USE_INS = "useIns"
-        const val KEY_SCR_WRAP = "scrWrap"
         const val KEY_SCR_ALIGN = "scrAlign"
         const val KEY_DIS_PREC = "disPrec"
         const val KEY_USE_MILLI = "useMilli"

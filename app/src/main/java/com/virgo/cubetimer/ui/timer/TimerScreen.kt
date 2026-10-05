@@ -116,7 +116,6 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
                         ui = ui,
                         onPrev = { vm.prevScramble() },
                         onNext = { vm.nextScramble() },
-                        onRefresh = { vm.generateScramble() },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -159,7 +158,7 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
 
 /**
  * 从开始观察到拍表之间：观察中、就绪、计时中三种状态都只显示时间，
- * 打乱文本、◀ ▶ ↻、ao5/ao12、打乱展开图与底部胶囊一并隐去；拍表（STOPPED）后恢复。
+ * 打乱文本、◀ ▶、ao5/ao12、打乱展开图与底部胶囊一并隐去；拍表（STOPPED）后恢复。
  */
 internal val TimerEngine.Status.hidesOtherUi: Boolean
     get() = this == TimerEngine.Status.INSPECTING ||
@@ -176,13 +175,12 @@ private fun lcdColor(status: TimerEngine.Status, pressed: Boolean, useInspection
         else VirgoColors.OnBackground
 }
 
-/** 打乱区：打乱文本在上，`◀ ▶ ↻` 在下方居中（竖屏/横屏一致）。 */
+/** 打乱区：打乱文本在上，`◀ ▶` 在下方居中（竖屏/横屏一致）。 */
 @Composable
 private fun ScrambleBar(
     ui: TimerUiState,
     onPrev: () -> Unit,
     onNext: () -> Unit,
-    onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val align = when (ui.scrambleAlign) {
@@ -197,14 +195,13 @@ private fun ScrambleBar(
             fontSize = 18.sp,
             fontFamily = TimerFontFamily,
             textAlign = align,
-            softWrap = ui.scrambleWrap,
+            softWrap = true,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             NavButton(label = "◀", enabled = ui.canPrev, onClick = onPrev)
             NavButton(label = "▶", enabled = true, onClick = onNext)
-            NavButton(label = "↻", enabled = !ui.generating, onClick = onRefresh)
         }
     }
 }
