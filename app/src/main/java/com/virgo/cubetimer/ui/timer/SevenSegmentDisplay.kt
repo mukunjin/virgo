@@ -7,9 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
+import kotlin.math.hypot
 
 /** 小数点后的字符相对小数点前的高度比例（三分之二）。 */
 private const val DECIMAL_SCALE = 2f / 3f
@@ -98,14 +99,35 @@ private fun DrawScope.drawGlyph(
     }
 }
 
-/** 绘制一个点（以圆头短线表示）。 */
+/** 绘制一个点（实心圆点）。 */
 private fun DrawScope.drawDot(cx: Float, cy: Float, color: Color, stroke: Float) {
-    drawLine(color, Offset(cx, cy), Offset(cx, cy), strokeWidth = stroke, cap = StrokeCap.Round)
+    drawCircle(color, radius = stroke * 0.75f, center = Offset(cx, cy))
 }
 
-/** 绘制一条段（圆头短线）。 */
+/** 绘制一条段：两端尖的六边形（真实数码管的段形状）。 */
 private fun DrawScope.drawSeg(x1: Float, y1: Float, x2: Float, y2: Float, color: Color, stroke: Float) {
-    drawLine(color, Offset(x1, y1), Offset(x2, y2), strokeWidth = stroke, cap = StrokeCap.Round)
+    val dx = x2 - x1
+    val dy = y2 - y1
+    val len = hypot(dx, dy)
+    if (len <= 0.0001f) return
+    val ux = dx / len
+    val uy = dy / len
+    val half = stroke / 2f
+    // 尖角沿段方向延伸的长度（约 45°）
+    val tip = half
+    // 段方向的法向量，用于撑开段厚度
+    val hx = -uy * half
+    val hy = ux * half
+    val path = Path().apply {
+        moveTo(x1, y1)
+        lineTo(x1 + ux * tip + hx, y1 + uy * tip + hy)
+        lineTo(x2 - ux * tip + hx, y2 - uy * tip + hy)
+        lineTo(x2, y2)
+        lineTo(x2 - ux * tip - hx, y2 - uy * tip - hy)
+        lineTo(x1 + ux * tip - hx, y1 + uy * tip - hy)
+        close()
+    }
+    drawPath(path, color)
 }
 
 /** 按段码绘制一个字符。 */
