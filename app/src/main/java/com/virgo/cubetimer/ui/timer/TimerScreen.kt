@@ -27,7 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -99,6 +99,9 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
         // 从进入观察到拍表（含观察、就绪、计时中）之间，屏幕上只保留时间
         val focus = ui.status.hidesOtherUi
 
+        val density = LocalDensity.current
+        val lcdHeight = with(density) { lcdSize.toPx().toDp() }
+
         Column(modifier = Modifier.fillMaxSize()) {
             // 顶部打乱区（全屏均可计时）。观察开始到拍表之间只留时间，其余元素隐去
             if (!focus) {
@@ -119,15 +122,10 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Text(
+            SevenSegmentDisplay(
                 text = displayText,
-                fontSize = lcdSize,
-                fontFamily = TimerFontFamily,
-                fontWeight = FontWeight.Medium,
                 color = lcdColor(ui.status, pressed, ui.useInspection),
-                maxLines = 1,
-                softWrap = false,
-                textAlign = TextAlign.Center,
+                digitHeight = lcdHeight,
                 modifier = Modifier.fillMaxWidth(),
             )
 
