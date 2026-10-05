@@ -35,8 +35,8 @@ data class TimerResult(
  * ```
  * IDLE --按下--> (300ms 长按) READY --松手--> RUNNING --按下--> STOPPED --松手--> IDLE
  * ```
- * 开启观察时：长按 300ms 才开始观察倒计时，再次长按进入就绪：
- * `IDLE --长按--> INSPECTING --长按--> READY --松手--> RUNNING`。
+ * 开启观察时：长按 300ms 进入观察态，松手后才开始观察倒计时，再次长按进入就绪：
+ * `IDLE --长按--> INSPECTING --松手(开始倒计时)--> INSPECTING --长按--> READY --松手--> RUNNING`。
  */
 class TimerEngine(
     private val scope: CoroutineScope,
@@ -57,6 +57,8 @@ class TimerEngine(
     private var lastDownMs = 0L
     private var lastStopMs = 0L
     private var pressReadyJob: Job? = null
+    /** 观察倒计时是否已真正开始（长按进入观察后仍需松手才计时）。 */
+    private var inspectionStarted = false
 
     /** 是否处于「已清空」显示态（对应 timer.js 的 isCleared）。 */
     private var cleared = true
@@ -108,7 +110,7 @@ class TimerEngine(
         when (status) {
             Status.STOPPED -> status = Status.IDLE
 
-            Status.IDLE, Status.INSPECTING -> {
+            Status.IDLE -> {
                 clearPressReady()
                 if (t - lastStopMs < 500) {
                     onChanged()
@@ -116,9 +118,18 @@ class TimerEngine(
                 }
             }
 
+            Status.INSPECTING -> {
+                // 长按进入观察态后仍需松手，观察倒计时才真正开始
+                clearPressReady()
+                if (!inspectionStarted) {
+                    inspectionStarted = true
+                    startMs = t
+                }
+            }
+
             Status.READY -> {
                 lastDownMs = t
-                val insTime = if (config().useInspection) t - startMs else 0L
+                val insTime = if (config().useInspection && inspectionStarted) t - startMs else 0L
                 startMs = t
                 penalty = when {
                     insTime > 17_000 -> -1
@@ -142,6 +153,7 @@ class TimerEngine(
         status = Status.IDLE
         cleared = true
         lastResultMs = 0L
+        inspectionStarted = false
         onChanged()
     }
 
@@ -150,9 +162,9 @@ class TimerEngine(
             Status.IDLE -> {
                 cleared = true
                 lastResultMs = 0L
+                inspectionStarted = false
                 if (config().useInspection) {
-                    // 长按到达才真正开始 15 秒观察倒计时
-                    startMs = now()
+                    // 长按到达只进入观察态；观察倒计时待松手后才开始
                     status = Status.INSPECTING
                 } else {
                     status = Status.READY
@@ -177,7 +189,9 @@ class TimerEngine(
 
     /** 当前已运行/观察的毫秒数。 */
     fun elapsedMs(): Long = when (status) {
-        Status.RUNNING, Status.INSPECTING -> now() - startMs
+        Status.RUNNING -> now() - startMs
+        // 观察倒计时松手后才开始；未开始前按 0 计，显示满额
+        Status.INSPECTING -> if (inspectionStarted) now() - startMs else 0L
         else -> 0L
     }
 
