@@ -43,8 +43,9 @@ class Scramble333GoldenTest {
             ?: error("找不到金标准资源 $GOLDEN_RESOURCE")
         return stream.bufferedReader(Charsets.UTF_8)
             .readText()
-            .trimEnd('\n')
+            .trimEnd('\r', '\n')
             .split("\n")
+            .map { it.trimEnd('\r') }
     }
 
     private companion object {
