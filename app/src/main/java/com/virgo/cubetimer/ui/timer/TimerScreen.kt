@@ -2,7 +2,6 @@ package com.virgo.cubetimer.ui.timer
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -210,21 +207,17 @@ private fun ScrambleBar(
     }
 }
 
-/** 药丸按钮：箭头用画布三角形绘制，保证几何居中（避免字体基线偏移）。 */
+/** 上一条 / 下一条：直接绘制白色三角形，无底色，几何居中。 */
 @Composable
 private fun NavButton(pointLeft: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(percent = 50)
-    val contentColor = if (enabled) VirgoColors.OnButton else VirgoColors.Disabled
+    val contentColor = if (enabled) VirgoColors.OnBackground else VirgoColors.Disabled
     Box(
         modifier = Modifier
-            .size(width = 52.dp, height = 40.dp)
-            .clip(shape)
-            .background(if (enabled) VirgoColors.ButtonFill else VirgoColors.Surface)
-            .border(1.dp, VirgoColors.Border, shape)
+            .size(width = 52.dp, height = 44.dp)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(modifier = Modifier.size(15.dp)) {
+        Canvas(modifier = Modifier.size(22.dp)) {
             val w = size.width
             val h = size.height
             val path = Path().apply {
