@@ -2,6 +2,10 @@
 
 English | [简体中文](README.zh-CN.md)
 
+<p align="center">
+  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="120" alt="Virgo logo">
+</p>
+
 An offline 3x3x3 Rubik's Cube timer for Android. **Fully native Android (Kotlin + Jetpack Compose), no WebView**; the scramble and timer logic are referenced from and reimplemented after csTimer (GPLv3). It **runs completely offline** — no INTERNET permission is requested and it does not depend on cstimer.net.
 
 The 3x3x3 (333) scramble algorithm is a **full reimplementation of csTimer's**: ISAAC random source + random-state generation + min2phase inverse solution. With the same seed, the generated scrambles match csTimer **character for character**, guarded by golden-standard unit tests.

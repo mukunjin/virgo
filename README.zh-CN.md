@@ -2,6 +2,10 @@
 
 [English](README.md) | 简体中文
 
+<p align="center">
+  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="120" alt="Virgo logo">
+</p>
+
 安卓离线三阶魔方计时器。**全原生 Android（Kotlin + Jetpack Compose）实现，不使用 WebView**，打乱与计时逻辑参考并复刻自 csTimer（GPLv3）。**完全离线运行**，不申请 INTERNET 权限，不依赖 cstimer.net。
 
 三阶（333）打乱算法**全复刻 csTimer**：ISAAC 随机源 + 随机态生成 + min2phase 求逆解，同种子下生成的打乱与 csTimer **逐字符一致**，并有金标准单测保障。
