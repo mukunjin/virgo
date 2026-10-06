@@ -1,5 +1,6 @@
 package com.virgo.cubetimer.ui.timer
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -202,16 +204,17 @@ private fun ScrambleBar(
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            NavButton(label = "◀", enabled = ui.canPrev, onClick = onPrev)
-            NavButton(label = "▶", enabled = true, onClick = onNext)
+            NavButton(pointLeft = true, enabled = ui.canPrev, onClick = onPrev)
+            NavButton(pointLeft = false, enabled = true, onClick = onNext)
         }
     }
 }
 
-/** 药丸按钮：Material 全圆角，比原方形略大，便于点按。 */
+/** 药丸按钮：箭头用画布三角形绘制，保证几何居中（避免字体基线偏移）。 */
 @Composable
-private fun NavButton(label: String, enabled: Boolean, onClick: () -> Unit) {
+private fun NavButton(pointLeft: Boolean, enabled: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(percent = 50)
+    val contentColor = if (enabled) VirgoColors.OnButton else VirgoColors.Disabled
     Box(
         modifier = Modifier
             .size(width = 52.dp, height = 40.dp)
@@ -221,11 +224,23 @@ private fun NavButton(label: String, enabled: Boolean, onClick: () -> Unit) {
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = label,
-            fontSize = 16.sp,
-            color = if (enabled) VirgoColors.OnButton else VirgoColors.Disabled,
-        )
+        Canvas(modifier = Modifier.size(15.dp)) {
+            val w = size.width
+            val h = size.height
+            val path = Path().apply {
+                if (pointLeft) {
+                    moveTo(w, 0f)
+                    lineTo(0f, h / 2f)
+                    lineTo(w, h)
+                } else {
+                    moveTo(0f, 0f)
+                    lineTo(w, h / 2f)
+                    lineTo(0f, h)
+                }
+                close()
+            }
+            drawPath(path, contentColor)
+        }
     }
 }
 
