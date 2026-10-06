@@ -227,9 +227,18 @@ private fun SessionNameDialog(
                     isError = error != null,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                if (error != null) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(text = error, color = VirgoColors.TimerRed, fontSize = 12.sp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(text = error.orEmpty(), color = VirgoColors.TimerRed, fontSize = 12.sp)
+                    Text(
+                        text = "${text.length}/$NAME_MAX",
+                        color = VirgoColors.OnSurfaceVariant,
+                        fontSize = 12.sp,
+                    )
                 }
             }
         },
@@ -275,22 +284,20 @@ private fun StatsSummary(
             StatRow("次数", "${s.count}")
             StatRow("DNF", "${s.dnfCount}")
             Spacer(modifier = Modifier.height(10.dp))
-            // 汇总方框底部：左「重命名」、右「删除分组」，两者等宽等大
             val current = ui.sessions.firstOrNull { it.id == ui.sessionId }
+            // 左「重命名」、右「删除分组」，紧凑胶囊，两端对齐不占满整行
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 SessionActionCapsule(
                     label = "重命名",
                     danger = false,
-                    modifier = Modifier.weight(1f),
                     onClick = { current?.let(onRenameSession) },
                 )
                 SessionActionCapsule(
                     label = "删除分组",
                     danger = true,
-                    modifier = Modifier.weight(1f),
                     onClick = onDeleteSession,
                 )
             }
@@ -438,7 +445,7 @@ private fun ActionText(
     }
 }
 
-/** 分组操作胶囊（重命名 / 删除），两者等大；高度小于底部胶囊栏。 */
+/** 分组操作胶囊（重命名 / 删除），宽度随文字紧凑自适应；高度小于底部胶囊栏。 */
 @Composable
 private fun SessionActionCapsule(
     label: String,
@@ -460,6 +467,7 @@ private fun SessionActionCapsule(
             color = if (danger) Color.White else VirgoColors.OnButton,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(horizontal = 20.dp),
         )
     }
 }
