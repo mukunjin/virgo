@@ -28,6 +28,7 @@ import com.virgo.cubetimer.ui.about.AboutScreen
 import com.virgo.cubetimer.ui.menu.CapsuleBar
 import com.virgo.cubetimer.ui.menu.Panel
 import com.virgo.cubetimer.ui.settings.SettingsScreen
+import com.virgo.cubetimer.ui.stats.SolveDetailOverlay
 import com.virgo.cubetimer.ui.stats.StatsScreen
 import com.virgo.cubetimer.ui.theme.VirgoColors
 import com.virgo.cubetimer.ui.theme.VirgoTheme
@@ -67,6 +68,15 @@ fun VirgoApp() {
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 12.dp)
                         .width(minOf(maxWidth * 0.76f, 360.dp)),
+                )
+            }
+
+            // 成绩详情：应用内全屏浮层（避免独立弹窗窗口带来的延迟）
+            ui.detailSolve?.let { solve ->
+                SolveDetailOverlay(
+                    solve = solve,
+                    useMilli = ui.useMilli,
+                    onClose = { vm.closeSolveDetail() },
                 )
             }
         }

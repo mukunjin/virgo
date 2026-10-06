@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.virgo.cubetimer.data.db.SessionEntity
@@ -48,8 +50,6 @@ fun StatsScreen(ui: TimerUiState, vm: TimerViewModel) {
     var confirmDeleteSession by remember { mutableStateOf(false) }
     /** 待确认删除的单次成绩。 */
     var confirmDeleteSolve by remember { mutableStateOf<SolveEntity?>(null) }
-    /** 点击成绩后查看其对应打乱的弹窗。 */
-    var detail by remember { mutableStateOf<SolveEntity?>(null) }
     /** 是否显示「新建分组」命名弹窗。 */
     var createDialog by remember { mutableStateOf(false) }
     /** 待重命名的分组。 */
@@ -107,7 +107,7 @@ fun StatsScreen(ui: TimerUiState, vm: TimerViewModel) {
                         vm.setPenalty(solve, if (solve.penalty == -1) 0 else -1)
                     },
                     onDelete = { confirmDeleteSolve = solve },
-                    onClick = { detail = solve },
+                    onClick = { vm.openSolveDetail(solve) },
                 )
                 Spacer(modifier = Modifier.height(6.dp))
             }
@@ -151,34 +151,6 @@ fun StatsScreen(ui: TimerUiState, vm: TimerViewModel) {
             },
             dismissButton = {
                 TextButton(onClick = { confirmDeleteSolve = null }) { Text("取消") }
-            },
-        )
-    }
-
-    detail?.let { solve ->
-        val scramble = solve.scramble
-        AlertDialog(
-            onDismissRequest = { detail = null },
-            title = { Text("本次打乱") },
-            text = {
-                Column {
-                    Text(
-                        text = scramble.ifEmpty { "（该成绩未记录打乱）" },
-                        color = VirgoColors.OnBackground,
-                        fontSize = 15.sp,
-                        fontFamily = TimerFontFamily,
-                    )
-                    if (scramble.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        CubeNet(
-                            facelets = remember(solve.id) { CubeState.faceletsOf(scramble) },
-                            modifier = Modifier.fillMaxWidth().height(200.dp),
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { detail = null }) { Text("关闭") }
             },
         )
     }
@@ -489,5 +461,67 @@ private fun SessionActionCapsule(
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
         )
+    }
+}
+
+/**
+ * 成绩详情浮层（应用内叠加层，非独立弹窗窗口）：
+ * 同时展示该次成绩与其对应打乱、打乱展开图。点击遮罩或「关闭」收起。
+ */
+@Composable
+fun SolveDetailOverlay(solve: SolveEntity, useMilli: Boolean, onClose: () -> Unit) {
+    val scramble = solve.scramble
+    val timeColor = when (solve.penalty) {
+        -1 -> VirgoColors.TimerRed
+        2000 -> VirgoColors.TimerYellow
+        else -> VirgoColors.OnBackground
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.72f))
+            .clickable(onClick = onClose),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .clip(RoundedCornerShape(20.dp))
+                .background(VirgoColors.SurfaceVariant)
+                // 吞掉卡片内部点击，避免误触遮罩关闭
+                .clickable(onClick = {})
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(text = "本次成绩", color = VirgoColors.OnSurfaceVariant, fontSize = 13.sp)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = TimeFormat.prettyPenalty(solve.totalMs, solve.penalty, useMilli),
+                color = timeColor,
+                fontSize = 30.sp,
+                fontFamily = TimerFontFamily,
+                fontWeight = FontWeight.Medium,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "打乱", color = VirgoColors.OnSurfaceVariant, fontSize = 13.sp)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = scramble.ifEmpty { "（该成绩未记录打乱）" },
+                color = VirgoColors.OnBackground,
+                fontSize = 15.sp,
+                fontFamily = TimerFontFamily,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            if (scramble.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(14.dp))
+                CubeNet(
+                    facelets = remember(solve.id) { CubeState.faceletsOf(scramble) },
+                    modifier = Modifier.fillMaxWidth().height(180.dp),
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(onClick = onClose) { Text("关闭") }
+        }
     }
 }

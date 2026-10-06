@@ -42,6 +42,8 @@ data class TimerUiState(
     val useInspection: Boolean = false,
     val useMilli: Boolean = true,
     val scrambleAlign: Int = 1,
+    /** 当前正在查看详情的成绩（非空时显示应用内详情浮层）。 */
+    val detailSolve: SolveEntity? = null,
 )
 
 /**
@@ -239,6 +241,16 @@ class TimerViewModel(app: Application) : AndroidViewModel(app) {
 
     fun deleteSolve(solve: SolveEntity) {
         viewModelScope.launch { repo.deleteSolve(solve) }
+    }
+
+    /** 打开某条成绩的详情浮层。 */
+    fun openSolveDetail(solve: SolveEntity) {
+        _state.update { it.copy(detailSolve = solve) }
+    }
+
+    /** 关闭成绩详情浮层。 */
+    fun closeSolveDetail() {
+        _state.update { it.copy(detailSolve = null) }
     }
 
     private fun saveSolve(result: TimerResult) {
