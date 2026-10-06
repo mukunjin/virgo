@@ -60,7 +60,8 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
         }
     }
 
-    val displayText = remember(ui.status, tickMs) { vm.displayText() }
+    // 空闲态显示的最新成绩会随列表变化，故一并作为刷新依据
+    val displayText = remember(ui.status, tickMs, ui.useMilli, ui.solves.lastOrNull()) { vm.displayText() }
 
     BoxWithConstraints(
         modifier = modifier

@@ -124,9 +124,18 @@ class TimerViewModel(app: Application) : AndroidViewModel(app) {
             // 就绪（正式计时开始前的长按）仍显示观察倒计时，而不是 0.000
             TimerEngine.Status.READY ->
                 if (_state.value.useInspection) inspectionText(engine.elapsedMs())
-                else TimeFormat.pretty(engine.staticDisplayMs(), useMilli)
-            else -> TimeFormat.pretty(engine.staticDisplayMs(), useMilli)
+                else TimeFormat.pretty(0L, useMilli)
+            // 刚拍表：显示本次成绩
+            TimerEngine.Status.STOPPED -> TimeFormat.pretty(engine.staticDisplayMs(), useMilli)
+            // 空闲：自动读取当前分组最新一条成绩；无成绩则显示 0.000
+            TimerEngine.Status.IDLE -> latestSolveText(useMilli)
         }
+    }
+
+    /** 空闲态显示当前分组最新成绩；无成绩时显示 0.000。 */
+    private fun latestSolveText(useMilli: Boolean): String {
+        val latest = _state.value.solves.lastOrNull() ?: return TimeFormat.pretty(0L, useMilli)
+        return TimeFormat.prettyPenalty(latest.totalMs, latest.penalty, useMilli)
     }
 
     /** 观察倒计时文本：15~1 秒、超时 +2、再超时 DNF。 */
