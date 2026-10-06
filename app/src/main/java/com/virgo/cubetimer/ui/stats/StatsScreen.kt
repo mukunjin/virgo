@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.virgo.cubetimer.data.db.SessionEntity
 import com.virgo.cubetimer.data.db.SolveEntity
 import com.virgo.cubetimer.scramble.CubeState
 import com.virgo.cubetimer.timer.TimeFormat
@@ -48,6 +50,10 @@ fun StatsScreen(ui: TimerUiState, vm: TimerViewModel) {
     var confirmDeleteSolve by remember { mutableStateOf<SolveEntity?>(null) }
     /** 点击成绩后查看其对应打乱的弹窗。 */
     var detail by remember { mutableStateOf<SolveEntity?>(null) }
+    /** 是否显示「新建分组」命名弹窗。 */
+    var createDialog by remember { mutableStateOf(false) }
+    /** 待重命名的分组。 */
+    var renameTarget by remember { mutableStateOf<SessionEntity?>(null) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         // 分组切换
@@ -68,12 +74,16 @@ fun StatsScreen(ui: TimerUiState, vm: TimerViewModel) {
             SessionChip(
                 name = "＋ 新建",
                 selected = false,
-                onClick = { vm.addSession() },
+                onClick = { createDialog = true },
             )
         }
 
         Spacer(modifier = Modifier.height(6.dp))
-        StatsSummary(ui, onDeleteSession = { confirmDeleteSession = true })
+        StatsSummary(
+            ui = ui,
+            onRenameSession = { renameTarget = it },
+            onDeleteSession = { confirmDeleteSession = true },
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         // 成绩列表（最新在上）
@@ -172,11 +182,101 @@ fun StatsScreen(ui: TimerUiState, vm: TimerViewModel) {
             },
         )
     }
+
+    if (createDialog) {
+        SessionNameDialog(
+            title = "新建分组",
+            initial = vm.suggestGroupName(),
+            existingNames = ui.sessions.map { it.name },
+            originalName = null,
+            onConfirm = {
+                createDialog = false
+                vm.addSession(it)
+            },
+            onDismiss = { createDialog = false },
+        )
+    }
+
+    renameTarget?.let { target ->
+        SessionNameDialog(
+            title = "重命名分组",
+            initial = target.name,
+            existingNames = ui.sessions.map { it.name },
+            originalName = target.name,
+            onConfirm = {
+                renameTarget = null
+                vm.renameSession(target.id, it)
+            },
+            onDismiss = { renameTarget = null },
+        )
+    }
+}
+
+/** 分组名规则：仅中英文（可含数字与空格），最长 20 字；列表展示最多 10 字。 */
+private const val NAME_MAX = 20
+private const val NAME_DISPLAY_MAX = 10
+private val NAME_ALLOWED = Regex("[\\u4e00-\\u9fa5A-Za-z0-9 ]+")
+
+/** 分组名的列表展示文本：超过 [NAME_DISPLAY_MAX] 字时截断并加省略号。 */
+private fun displayName(name: String): String =
+    if (name.length <= NAME_DISPLAY_MAX) name else name.take(NAME_DISPLAY_MAX) + "…"
+
+/**
+ * 分组命名弹窗（新建 / 重命名共用）：
+ * 仅允许中英文（可含数字与空格）、最长 [NAME_MAX] 字、且不能与其它分组重名。
+ */
+@Composable
+private fun SessionNameDialog(
+    title: String,
+    initial: String,
+    existingNames: List<String>,
+    originalName: String?,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var text by remember { mutableStateOf(initial) }
+    val trimmed = text.trim()
+    val error = when {
+        trimmed.isEmpty() -> "名称不能为空"
+        trimmed.length > NAME_MAX -> "最多 $NAME_MAX 个字"
+        !NAME_ALLOWED.matches(trimmed) -> "仅支持中英文（可含数字与空格）"
+        existingNames.any { it != originalName && it.equals(trimmed, ignoreCase = true) } -> "该名称已存在"
+        else -> null
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { if (it.length <= NAME_MAX) text = it },
+                    singleLine = true,
+                    isError = error != null,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (error != null) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(text = error, color = VirgoColors.TimerRed, fontSize = 12.sp)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = error == null, onClick = { onConfirm(trimmed) }) { Text("确定") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+    )
 }
 
 /** 会话汇总：ao5/ao12 用大号卡片突出展示，其余指标用列表呈现。 */
 @Composable
-private fun StatsSummary(ui: TimerUiState, onDeleteSession: () -> Unit) {
+private fun StatsSummary(
+    ui: TimerUiState,
+    onRenameSession: (SessionEntity) -> Unit,
+    onDeleteSession: () -> Unit,
+) {
     val s = ui.stats
     val milli = ui.useMilli
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -203,8 +303,25 @@ private fun StatsSummary(ui: TimerUiState, onDeleteSession: () -> Unit) {
             StatRow("次数", "${s.count}")
             StatRow("DNF", "${s.dnfCount}")
             Spacer(modifier = Modifier.height(10.dp))
-            // 汇总方框底部：删除当前分组（危险操作，红色胶囊 + 弹窗确认）
-            DangerCapsule(label = "删除当前分组", onClick = onDeleteSession)
+            // 汇总方框底部：左「重命名」、右「删除分组」，两者等宽等大
+            val current = ui.sessions.firstOrNull { it.id == ui.sessionId }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                SessionActionCapsule(
+                    label = "重命名",
+                    danger = false,
+                    modifier = Modifier.weight(1f),
+                    onClick = { current?.let(onRenameSession) },
+                )
+                SessionActionCapsule(
+                    label = "删除分组",
+                    danger = true,
+                    modifier = Modifier.weight(1f),
+                    onClick = onDeleteSession,
+                )
+            }
             Spacer(modifier = Modifier.height(6.dp))
         }
     }
@@ -263,7 +380,7 @@ private fun SessionChip(name: String, selected: Boolean, onClick: () -> Unit) {
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Text(
-            text = name,
+            text = displayName(name),
             color = if (selected) VirgoColors.OnButton else VirgoColors.OnSurfaceVariant,
             fontSize = 13.sp,
         )
@@ -349,21 +466,26 @@ private fun ActionText(
     }
 }
 
-/** 醒目的红色药丸按钮，用于危险操作（删除）。 */
+/** 分组操作胶囊（重命名 / 删除），两者等大；高度小于底部胶囊栏。 */
 @Composable
-private fun DangerCapsule(label: String, onClick: () -> Unit) {
+private fun SessionActionCapsule(
+    label: String,
+    danger: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
     val shape = RoundedCornerShape(percent = 50)
     Box(
-        modifier = Modifier
+        modifier = modifier
+            .height(36.dp)
             .clip(shape)
-            .background(VirgoColors.TimerRed)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 11.dp),
+            .background(if (danger) VirgoColors.TimerRed else VirgoColors.ButtonFill)
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = label,
-            color = Color.White,
+            color = if (danger) Color.White else VirgoColors.OnButton,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
         )

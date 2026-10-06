@@ -34,23 +34,12 @@ class SessionRepository(private val dao: VirgoDao) {
         )
     }
 
-    /**
-     * 生成不与现有分组重名的名字：取现有名字中最大编号 + 1。
-     * 直接用「数量 + 1」会在删除后产生重名（如删除「分组 1」后再新建又得到「分组 2」）。
-     */
-    private suspend fun nextGroupName(): String {
-        val maxIndex = dao.sessions()
-            .mapNotNull { it.name.substringAfterLast(' ').toIntOrNull() }
-            .maxOrNull() ?: 0
-        return "分组 ${maxIndex + 1}"
-    }
-
-    /** 新建分组（名字自动编号，保证不重名）。 */
-    suspend fun addSession(): Long {
+    /** 新建分组（名字由调用方给定）。 */
+    suspend fun addSession(name: String): Long {
         val order = dao.sessionCount()
         return dao.insertSession(
             SessionEntity(
-                name = nextGroupName(),
+                name = name,
                 orderIndex = order,
                 createdAt = System.currentTimeMillis() / 1000,
             )

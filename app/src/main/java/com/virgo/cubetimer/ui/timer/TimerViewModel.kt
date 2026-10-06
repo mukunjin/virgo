@@ -193,10 +193,18 @@ class TimerViewModel(app: Application) : AndroidViewModel(app) {
         generateScramble()
     }
 
-    /** 新建分组：名字由仓库自动编号，避免删除后重名。 */
-    fun addSession() {
+    /** 建议的新分组名：取现有名字中最大编号 + 1，避免删除后重名。 */
+    fun suggestGroupName(): String {
+        val maxIndex = _state.value.sessions
+            .mapNotNull { it.name.substringAfterLast(' ').toIntOrNull() }
+            .maxOrNull() ?: 0
+        return "分组 ${maxIndex + 1}"
+    }
+
+    /** 新建分组（使用用户输入的名字）。 */
+    fun addSession(name: String) {
         viewModelScope.launch {
-            val id = repo.addSession()
+            val id = repo.addSession(name)
             selectSession(id)
         }
     }
