@@ -48,8 +48,8 @@
 版本号**唯一来源**是根目录 [gradle.properties](gradle.properties)：
 
 ```properties
-virgo.versionCode=2
-virgo.versionName=0.1.7
+virgo.versionCode=3
+virgo.versionName=0.2.0
 ```
 
 `app/build.gradle.kts` 直接读取这两项写入 APK；界面如需显示版本，读 `BuildConfig.VERSION_NAME` 即可与 APK 完全一致（`buildConfig` 已开启）。改版本只改这一处。
@@ -57,7 +57,7 @@ virgo.versionName=0.1.7
 - `versionName` 是自由字符串，可写 `1.0.0` 这类三位小数，仅用于展示
 - `versionCode` 必须是递增整数，用于系统判断升级
 
-APK 产物名也跟随版本号自动生成：release 为 **`virgo-<versionName>.apk`**，debug 为 `virgo-<versionName>-debug.apk`。当前版本 `0.1.7`，产物即 `virgo-0.1.7.apk`。
+APK 产物名也跟随版本号自动生成：release 为 **`virgo-<versionName>.apk`**，debug 为 `virgo-<versionName>-debug.apk`。当前版本 `0.2.0`，产物即 `virgo-0.2.0.apk`。
 
 “关于”界面同样读取 `BuildConfig.VERSION_NAME` 显示版本号，不会与 APK 不一致。
 
@@ -113,11 +113,11 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 .\gradlew.bat assembleRelease --console=plain
 ```
 
-产物：`app\build\outputs\apk\release\virgo-<versionName>.apk`（当前为 `virgo-0.1.7.apk`）
+产物：`app\build\outputs\apk\release\virgo-<versionName>.apk`（当前为 `virgo-0.2.0.apk`）
 
 release 构建复用 debug 密钥签名，因此可直接安装，无需另行配置 keystore。
 
-调试包用 `.\gradlew.bat assembleDebug --console=plain`，产物在 `app\build\outputs\apk\debug\virgo-0.1.7-debug.apk`。
+调试包用 `.\gradlew.bat assembleDebug --console=plain`，产物在 `app\build\outputs\apk\debug\virgo-0.2.0-debug.apk`。
 
 ## 2. 运行单元测试
 
@@ -132,19 +132,19 @@ release 构建复用 debug 密钥签名，因此可直接安装，无需另行�
 USB 调试可用时直接安装：
 
 ```powershell
-adb install -r app\build\outputs\apk\release\virgo-0.1.7.apk
+adb install -r app\build\outputs\apk\release\virgo-0.2.0.apk
 ```
 
 adb 不在 PATH 时用完整路径：
 
 ```powershell
-& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r app\build\outputs\apk\release\virgo-0.1.7.apk
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r app\build\outputs\apk\release\virgo-0.2.0.apk
 ```
 
 若报 `INSTALL_FAILED_USER_RESTRICTED`（小米等机型的「USB 安装」未开启），改为推送后在手机上手动安装：
 
 ```powershell
-adb push app\build\outputs\apk\release\virgo-0.1.7.apk /sdcard/Download/
+adb push app\build\outputs\apk\release\virgo-0.2.0.apk /sdcard/Download/
 ```
 
 PATH：
@@ -159,7 +159,7 @@ $env:Path += ";$env:LOCALAPPDATA\Android\Sdk\platform-tools"
 
 ```powershell
 .\gradlew.bat assembleRelease
-adb install -r app\build\outputs\apk\release\virgo-0.1.7.apk
+adb install -r app\build\outputs\apk\release\virgo-0.2.0.apk
 ```
 
 ## 许可证

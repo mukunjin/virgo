@@ -48,8 +48,8 @@ The color scheme is pure black + white: background `#000000`, primary text and t
 The **single source of truth** for the version is the root [gradle.properties](gradle.properties):
 
 ```properties
-virgo.versionCode=2
-virgo.versionName=0.1.7
+virgo.versionCode=3
+virgo.versionName=0.2.0
 ```
 
 `app/build.gradle.kts` reads these two values directly and writes them into the APK; if the UI needs to display the version, read `BuildConfig.VERSION_NAME` to stay exactly consistent with the APK (`buildConfig` is enabled). To change the version, change only this place.
@@ -57,7 +57,7 @@ virgo.versionName=0.1.7
 - `versionName` is a free-form string, e.g. `1.0.0`; used for display only
 - `versionCode` must be an increasing integer, used by the system to judge upgrades
 
-The APK artifact name also follows the version automatically: for release it is **`virgo-<versionName>.apk`**, for debug `virgo-<versionName>-debug.apk`. The current version is `0.1.7`, so the artifact is `virgo-0.1.7.apk`.
+The APK artifact name also follows the version automatically: for release it is **`virgo-<versionName>.apk`**, for debug `virgo-<versionName>-debug.apk`. The current version is `0.2.0`, so the artifact is `virgo-0.2.0.apk`.
 
 The "About" screen likewise reads `BuildConfig.VERSION_NAME`, so it never disagrees with the APK.
 
@@ -113,11 +113,11 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 .\gradlew.bat assembleRelease --console=plain
 ```
 
-Artifact: `app\build\outputs\apk\release\virgo-<versionName>.apk` (currently `virgo-0.1.7.apk`)
+Artifact: `app\build\outputs\apk\release\virgo-<versionName>.apk` (currently `virgo-0.2.0.apk`)
 
 The release build reuses the debug signing key, so it can be installed directly without configuring a separate keystore.
 
-For a debug build use `.\gradlew.bat assembleDebug --console=plain`; the artifact is `app\build\outputs\apk\debug\virgo-0.1.7-debug.apk`.
+For a debug build use `.\gradlew.bat assembleDebug --console=plain`; the artifact is `app\build\outputs\apk\debug\virgo-0.2.0-debug.apk`.
 
 ## 2. Run Unit Tests
 
@@ -132,19 +132,19 @@ Scramble and random source correctness is guaranteed by golden-standard tests (f
 When USB debugging is available, install directly:
 
 ```powershell
-adb install -r app\build\outputs\apk\release\virgo-0.1.7.apk
+adb install -r app\build\outputs\apk\release\virgo-0.2.0.apk
 ```
 
 If adb is not on PATH, use the full path:
 
 ```powershell
-& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r app\build\outputs\apk\release\virgo-0.1.7.apk
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" install -r app\build\outputs\apk\release\virgo-0.2.0.apk
 ```
 
 If you get `INSTALL_FAILED_USER_RESTRICTED` (e.g. Xiaomi with "Install via USB" disabled), push and install manually on the phone:
 
 ```powershell
-adb push app\build\outputs\apk\release\virgo-0.1.7.apk /sdcard/Download/
+adb push app\build\outputs\apk\release\virgo-0.2.0.apk /sdcard/Download/
 ```
 
 PATH:
@@ -159,7 +159,7 @@ Then open the APK under `Download` in the phone's file manager and install it.
 
 ```powershell
 .\gradlew.bat assembleRelease
-adb install -r app\build\outputs\apk\release\virgo-0.1.7.apk
+adb install -r app\build\outputs\apk\release\virgo-0.2.0.apk
 ```
 
 ## License
