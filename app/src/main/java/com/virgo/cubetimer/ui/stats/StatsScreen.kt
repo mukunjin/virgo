@@ -293,7 +293,7 @@ private fun SolveRow(
             .clip(shape)
             .background(VirgoColors.SurfaceVariant)
             .clickable(onClick = onClick)
-            .padding(start = 18.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+            .padding(start = 18.dp, end = 8.dp, top = 5.dp, bottom = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -338,14 +338,14 @@ private fun ActionText(
     }
     Box(
         modifier = Modifier
-            .size(width = 54.dp, height = 40.dp)
+            .size(width = 50.dp, height = 34.dp)
             .clip(shape)
             .background(fill)
             .border(1.dp, if (danger) VirgoColors.TimerRed else VirgoColors.Border, shape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = label, color = content, fontSize = 15.sp)
+        Text(text = label, color = content, fontSize = 14.sp)
     }
 }
 

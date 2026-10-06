@@ -66,7 +66,7 @@ fun VirgoApp() {
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(bottom = 12.dp)
-                        .width(minOf(maxWidth * 0.70f, 320.dp)),
+                        .width(minOf(maxWidth * 0.76f, 360.dp)),
                 )
             }
         }
