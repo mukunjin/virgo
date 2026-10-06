@@ -1,6 +1,5 @@
 package com.virgo.cubetimer.ui.timer
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,7 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -201,39 +201,30 @@ private fun ScrambleBar(
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            NavButton(pointLeft = true, enabled = ui.canPrev, onClick = onPrev)
-            NavButton(pointLeft = false, enabled = true, onClick = onNext)
+            NavButton(label = "上一条", enabled = ui.canPrev, onClick = onPrev)
+            NavButton(label = "下一条", enabled = true, onClick = onNext)
         }
     }
 }
 
-/** 上一条 / 下一条：直接绘制白色三角形，无底色，几何居中。 */
+/** 上一条 / 下一条：文字胶囊，宽度随文字自适应。 */
 @Composable
-private fun NavButton(pointLeft: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    val contentColor = if (enabled) VirgoColors.OnBackground else VirgoColors.Disabled
+private fun NavButton(label: String, enabled: Boolean, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(percent = 50)
     Box(
         modifier = Modifier
-            .size(width = 52.dp, height = 44.dp)
+            .height(38.dp)
+            .clip(shape)
+            .background(if (enabled) VirgoColors.ButtonFill else VirgoColors.Surface)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Canvas(modifier = Modifier.size(22.dp)) {
-            val w = size.width
-            val h = size.height
-            val path = Path().apply {
-                if (pointLeft) {
-                    moveTo(w, 0f)
-                    lineTo(0f, h / 2f)
-                    lineTo(w, h)
-                } else {
-                    moveTo(0f, 0f)
-                    lineTo(w, h / 2f)
-                    lineTo(0f, h)
-                }
-                close()
-            }
-            drawPath(path, contentColor)
-        }
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            color = if (enabled) VirgoColors.OnButton else VirgoColors.Disabled,
+            modifier = Modifier.padding(horizontal = 18.dp),
+        )
     }
 }
 
