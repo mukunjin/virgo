@@ -70,7 +70,8 @@ fun TimerScreen(ui: TimerUiState, vm: TimerViewModel, modifier: Modifier = Modif
                     var down = false
                     while (true) {
                         val event = awaitPointerEvent()
-                        val active = event.changes.filter { it.pressed }
+                        // 忽略已被子控件（◀ ▶ 等按钮）消费的触点，避免点击按钮时穿透触发计时
+                        val active = event.changes.filter { it.pressed && !it.isConsumed }
                         if (active.isEmpty()) {
                             // 全部手指抬起才松手（复刻 csTimer 的 touches.length === 0 判定）
                             if (down) {
