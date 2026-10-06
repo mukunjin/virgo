@@ -285,10 +285,10 @@ private fun StatsSummary(
             StatRow("DNF", "${s.dnfCount}")
             Spacer(modifier = Modifier.height(10.dp))
             val current = ui.sessions.firstOrNull { it.id == ui.sessionId }
-            // 左「重命名」、右「删除分组」，紧凑胶囊，两端对齐不占满整行
+            // 「重命名」「删除分组」紧凑胶囊，全部靠右下方对齐
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
             ) {
                 SessionActionCapsule(
                     label = "重命名",
